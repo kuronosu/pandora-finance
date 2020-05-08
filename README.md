@@ -22,7 +22,11 @@ $ pip install -r requirements.txt
 $ cd pandora_finance
 $ python manage.py migrate
 ```
-4. Run Django server
+4. Create superuser
+```
+$ python manage.py createsuperuser
+```
+5. Run Django server
 ```
 $ python manage.py runserver
 ```
