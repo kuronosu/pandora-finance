@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Regístrar cliente{% endblock title %}
+
+{% block content %}
+{% if form.non_field_errors %}
+<div class="alert alert-danger alert-dismissible fade show rounded-0" role="alert">
+  {% for error in form.non_field_errors %}
+  <p {% if forloop.last %} class="mb-0" {% endif %}>{{ error }}</p>
+  {% endfor %}
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{% endif %}
+
+<div class="container">
+  <h2 class="text-left mb-4 mt-3">Regístrar cliente</h2>
+  <form method="post">
+    {% csrf_token %}
+
+    {% for hidden_field in form.hidden_fields %}
+    {{ hidden_field }}
+    {% endfor %}
+
+    {% comment %} {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+      {% for error in form.non_field_errors %}
+      {{ error }}
+      {% endfor %}
+    </div>
+    {% endif %} {% endcomment %}
+
+    {% for field in form.visible_fields %}
+    <div class="form-group row">
+      <label for="{{ field.id_for_label }}" class="col-sm-3 col-form-label">{{ field.label }}</label>
+
+      {% if form.is_bound %}
+        {% if field.errors %}
+          {% render_field field class="form-control is-invalid col-sm-9" %}
+          {% for error in field.errors %}
+          <div class="invalid-feedback">
+            {{ error }}
+          </div>
+          {% endfor %}
+        {% else %}
+          {% render_field field class="form-control is-valid col-sm-9" %}
+        {% endif %}
+      {% else %}
+        {% render_field field class="form-control col-sm-9" %}
+      {% endif %}
+
+      {% if field.help_text %}
+        <small class="form-text text-muted">{{ field.help_text }}</small>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary">Regístrar</button>
+    </div>
+  </form>
+</div>
+{% endblock content %}

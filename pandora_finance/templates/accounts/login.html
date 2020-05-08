@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load widget_tweaks %}
+{% load get_item %}
+
+{% block styles %}
+<link rel="stylesheet" type="text/css" href="{% static 'css/login.css' %}">
+{% endblock styles %}
+
+{% block content %}
+{% if form.non_field_errors %}
+<div class="alert alert-danger alert-dismissible fade show rounded-0" role="alert">
+  {% for error in form.non_field_errors %}
+  <p {% if forloop.last %} class="mb-0" {% endif %}>{{ error }}</p>
+  {% endfor %}
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-center text-center">
+
+  <form class="col-3 m-5" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <h2 class="text-center mb-4">Iniciar sesión</h2>
+
+    {% for field in form.visible_fields %}
+    <div class="form-group">
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <i class="fas fa-{{ form.icons|get_item:field.name }} icon"></i>
+        </div>
+        {% render_field field class="form-control rounded-0" %}
+      </div>
+    </div>
+    {% endfor %}
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary btn-block">Iniciar sesión</button>
+    </div>
+    <div class="clearfix">
+      <a href="#" class="pull-right">¿Se te olvidó tu contraseña?</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}
