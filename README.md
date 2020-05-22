@@ -19,7 +19,6 @@ $ pip install -r requirements.txt
 ```
 3. Migrate the database
 ```
-$ cd pandora_finance
 $ python manage.py migrate
 ```
 4. Create superuser
