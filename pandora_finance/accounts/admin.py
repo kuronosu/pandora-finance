@@ -2,25 +2,39 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import User
 
-# Register your models here.
+
 class MyUserAdmin(UserAdmin):
     model = User
-    fieldsets = [
-        ("General", {"fields": [
+    fieldsets = (
+        ("Información personal", {"fields": [
             'document',
             'email',
             'first_name',
             'last_name',
-            'is_staff',
-            'is_active',
-            'password',
             'phone_number',
-            'user_type',
-            'is_superuser'
+            'password',
         ]}),
-        # ("Details", {"fields": ["description", "creation_date"], "classes": ["collapse"]})
-    ]
+        ('Estados',  {'fields': ['is_staff',
+                                 'is_active', 'is_superuser', 'user_type']}),
+        ("Detalles", {"fields": ["date_joined"], "classes": ["collapse"]}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': (
+                'document',
+                'email',
+                'first_name',
+                'last_name',
+                'is_staff',
+                'password',
+                'phone_number',
+                'user_type',
+                'is_superuser', 'password1', 'password2'),
+        }),
+    )
     ordering = ('document',)
-    list_display = ('document',)
+    list_display = ('document', 'id')
+
 
 admin.site.register(User, MyUserAdmin)

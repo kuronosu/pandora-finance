@@ -14,6 +14,7 @@ from django.contrib.auth.views import (
     LogoutView
 )
 
+from common.mixins import GeneralFormContexMixin
 from .forms import SignUpForm, AuthenticationForm, UserModel
 from .models import User
 from .mixins import (
@@ -30,9 +31,10 @@ class LoginView(_LoginView):
     redirect_authenticated_user = True
     form_class = AuthenticationForm
 
-class SignupView(RedirectAuthenticatedClientMixin, CreateView):
+
+class SignupView(RedirectAuthenticatedClientMixin, GeneralFormContexMixin, CreateView):
     """Generic SingUp View"""
-    template_name = 'accounts/signup.html'
+    template_name = 'general_form.html'  # 'accounts/signup.html'
     form_class = SignUpForm
     success_url = reverse_lazy('home')
     user_types = User.types
@@ -40,7 +42,8 @@ class SignupView(RedirectAuthenticatedClientMixin, CreateView):
 
     def get_user_type(self):
         if self.user_type not in self.user_types:
-            raise ImproperlyConfigured(f'user_type must be one of {self.user_types}')
+            raise ImproperlyConfigured(
+                f'user_type must be one of {self.user_types}')
         return self.user_type
 
     def form_valid(self, form):
@@ -56,14 +59,22 @@ class SignupView(RedirectAuthenticatedClientMixin, CreateView):
             return HttpResponseRedirect(next_page)
         return HttpResponseRedirect(self.get_success_url())
 
+
 class SignupClientView(LoginEmployeeRequiredMixin, SignupView):
     """SingUp Client View"""
     user_type = User.client_type
+    title = 'Registrar cliente'
+    page_title = 'Registrar cliente'
+    submit_text = 'Registrar'
 
 
 class SignupEmployeeView(LoginAdminRequiredMixin, SignupView):
     """SingUp Employee View"""
     user_type = User.employee_type
+    title = 'Registrar empleado'
+    page_title = 'Registrar empleado'
+    submit_text = 'Registrar'
+
 
 class MyPasswordResetView(RedirectAuthenticatedClientMixin, PasswordResetView):
     email_template_name = 'accounts/password_reset_email.html'

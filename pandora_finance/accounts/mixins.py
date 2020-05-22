@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect
-from django.contrib.auth.mixins import AccessMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class RedirectAuthenticatedClientMixin:
@@ -18,23 +18,19 @@ class RedirectAuthenticatedMixin:
         return super(RedirectAuthenticatedClientMixin, self).dispatch(request, *args, **kwargs)
 
 
-class LoginEmployeeRequiredMixin(AccessMixin):
+class LoginEmployeeRequiredMixin(LoginRequiredMixin):
     """Verify that the current user is authenticated and is employee."""
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return HttpResponseRedirect('/')
         if not self.request.user.is_employee:
             return HttpResponseRedirect('/')
         return super().dispatch(request, *args, **kwargs)
 
 
-class LoginAdminRequiredMixin(AccessMixin):
+class LoginAdminRequiredMixin(LoginRequiredMixin):
     """Verify that the current user is authenticated and is admin."""
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return HttpResponseRedirect('/')
         if not self.request.user.is_superuser:
             return HttpResponseRedirect('/')
         return super().dispatch(request, *args, **kwargs)

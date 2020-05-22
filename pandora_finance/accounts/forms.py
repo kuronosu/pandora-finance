@@ -8,6 +8,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import (
     PasswordChangeForm, PasswordResetForm, SetPasswordForm, UserCreationForm
 )
+from common.util.querrys import get_client
 
 UserModel = get_user_model()
 
@@ -34,18 +35,12 @@ class SignUpForm(UserCreationForm):
             field.label += ':'
 
     def clean_document(self):
-        data = self.cleaned_data['document']
-        try:
-            user = UserModel.objects.get(document=data)
-            print(user)
+        if get_client(self.cleaned_data['document']):
             raise forms.ValidationError(
                 self.error_messages['client_exist'],
                 code='client_exist',
             )
-        except UserModel.DoesNotExist:
-            pass
-
-        return data
+        return self.cleaned_data['document']
 
     class Meta(UserCreationForm.Meta):
         model = UserModel

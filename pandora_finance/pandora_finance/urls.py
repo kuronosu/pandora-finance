@@ -22,5 +22,6 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('', TemplateView.as_view(template_name="base.html"), name='home'),
     path('', include('accounts.urls', namespace='accounts')),
+    path('financing/', include('financing.urls', namespace='financing')),
     path('admin/', admin.site.urls),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -2,3 +2,5 @@ env
 venv
 .vscode
 *.pyc
+db.sqlite3
+*__tmp.py

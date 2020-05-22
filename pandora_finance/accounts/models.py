@@ -1,14 +1,20 @@
 
+import uuid
+from django.db.models.constraints import CheckConstraint, Q
 from django.db import models
 from django.utils import timezone
 from django.core.mail import send_mail
-from django.core.validators import RegexValidator
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from common.util import generate_code
 
 from .managers import UserManager
 from .validators import DNIValidator, PhoneValidator, NameValidator
+
+
+def generate_code_user():
+    return generate_code('User')
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -18,8 +24,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         (types[1], 'cliente'),
     )
 
-    document = models.CharField('Cédula', validators=[DNIValidator()],
-                                max_length=10, unique=True, primary_key=True)
+    id = models.UUIDField('Código', primary_key=True,
+                          default=generate_code_user, editable=False)
+    document = models.CharField(
+        'Cédula', validators=[DNIValidator()], max_length=10, unique=True)
     first_name = models.CharField(
         'Nombres', validators=[NameValidator()], max_length=30)
     last_name = models.CharField('Apellidos', validators=[
@@ -27,13 +35,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(
         validators=[PhoneValidator()], max_length=17)
     email = models.EmailField('Correo electronico')
-    address1 = models.CharField("Dirección 1", max_length=1024)
+    address1 = models.CharField('Dirección 1', max_length=1024)
     address2 = models.CharField(
-        "Dirección 2", max_length=1024, blank=True, null=True)
-    birthdate = models.DateField("Fecha de nacimiento")
-    user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES)
-    # is_client = models.BooleanField(default=False)
-    # is_employee = models.BooleanField(default=False)
+        'Dirección 2', max_length=1024, blank=True, null=True)
+    birthdate = models.DateField('Fecha de nacimiento')
+    user_type = models.PositiveSmallIntegerField('Tipo de usuario', choices=USER_TYPE_CHOICES)
+    can_authorize = models.BooleanField('Puede autorizar', default=False)
     is_staff = models.BooleanField('staff status', default=False)
     is_active = models.BooleanField(
         'active',
@@ -44,12 +51,17 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
     EMAIL_FIELD = 'email'
     USERNAME_FIELD = 'document'
-    REQUIRED_FIELDS = ['email']
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name',
+                       'phone_number', 'address1', 'birthdate', 'user_type']
 
     class Meta:
         verbose_name = 'usuario'
         verbose_name_plural = 'usuarios'
         swappable = 'AUTH_USER_MODEL'
+        constraints = [
+            CheckConstraint(check=(Q(can_authorize=True) & Q(user_type=1)) | (
+                Q(can_authorize=False) & Q(user_type__in=(1, 2))), name='can_authorize_only_employee'),
+        ]
 
     def clean(self):
         super().clean()

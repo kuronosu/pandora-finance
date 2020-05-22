@@ -3,7 +3,7 @@
 {% load static %}
 {% load widget_tweaks %}
 
-{% block title %}Regístrar cliente{% endblock title %}
+{% block title %}{{ page_title }}{% endblock title %}
 
 {% block content %}
 {% if form.non_field_errors %}
@@ -18,7 +18,7 @@
 {% endif %}
 
 <div class="container">
-  <h2 class="text-left mb-4 mt-3">Regístrar cliente</h2>
+  <h2 class="text-left mb-4 mt-3">{{ title }}</h2>
   <form method="post">
     {% csrf_token %}
 
@@ -26,13 +26,13 @@
     {{ hidden_field }}
     {% endfor %}
 
-    {% comment %} {% if form.non_field_errors %}
+    {% if form.non_field_errors %}
     <div class="alert alert-danger" role="alert">
       {% for error in form.non_field_errors %}
       {{ error }}
       {% endfor %}
     </div>
-    {% endif %} {% endcomment %}
+    {% endif %}
 
     {% for field in form.visible_fields %}
     <div class="form-group row">
@@ -60,7 +60,7 @@
     {% endfor %}
 
     <div class="form-group">
-      <button type="submit" class="btn btn-primary">Regístrar</button>
+      <button type="submit" class="btn btn-primary">{{ submit_text }}</button>
     </div>
   </form>
 </div>
