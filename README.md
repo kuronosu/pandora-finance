@@ -17,7 +17,7 @@ For windows
 $ ./env/Scripts/activate
 $ pip install -r requirements.txt
 ```
-3. Migrate
+3. Migrate the database
 ```
 $ cd pandora_finance
 $ python manage.py migrate
