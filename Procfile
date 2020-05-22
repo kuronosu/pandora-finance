@@ -1,0 +1,1 @@
+web: gunicorn pandora_finance.wsgi --log-file -
