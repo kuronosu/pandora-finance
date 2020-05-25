@@ -20,7 +20,8 @@ def generate_code_investment():
 
 
 class GuaranteeType(models.Model):
-    name = models.CharField(max_length=50, verbose_name='Tipo de garantía')
+    name = models.CharField(
+        max_length=50, verbose_name='Tipo de garantía', unique=True)
 
     def __str__(self):
         return self.name
@@ -29,11 +30,18 @@ class GuaranteeType(models.Model):
 class Guarantee(models.Model):
     code = models.UUIDField('Código', primary_key=True,
                             default=generate_code_guarantee, editable=False)
+    name = models.CharField(
+        max_length=50, verbose_name='Nombre de la garantía')
     type = models.ForeignKey(
         GuaranteeType, on_delete=models.CASCADE, verbose_name='Tipo')
     value = models.DecimalField('Valor', decimal_places=2, max_digits=12, validators=[
                                 MinValueValidator(Decimal('1.0'))])
     location = models.CharField('Ubicación', max_length=100)
+    client = models.ForeignKey(
+        settings.AUTH_USER_MODEL, verbose_name='Cliente', related_name='guarantee_owner', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
 
 
 class Finance(models.Model):
@@ -41,12 +49,34 @@ class Finance(models.Model):
         'Fecha de solicitud', default=timezone.now)
     approval_date = models.DateTimeField(
         'Fecha de aprobación', blank=True, null=True)
-    start_date = models.DateField('Fecha de inicio')
-    end_date = models.DateField('Fecha de término')
+    start_date = models.DateField('Fecha de inicio', blank=True, null=True)
+    end_date = models.DateField('Fecha de término', blank=True, null=True)
     amount = models.DecimalField('Monto', decimal_places=2, max_digits=12, validators=[
                                  MinValueValidator(Decimal('1.0'))])
     interest_rate = models.DecimalField('Tasa de interés', decimal_places=2, max_digits=5, validators=[
         MinValueValidator(Decimal('0'))])
+    checked = models.BooleanField('Revisado', default=False)
+    installments_number = models.PositiveSmallIntegerField(
+        'Número de cuotas', validators=[MinValueValidator(1)])
+
+    @classmethod
+    def get_approved(cls):
+        return (cls.objects
+                .exclude(approval_date=None)
+                .filter(checked=True)
+                .order_by('application_date'))
+
+    @classmethod
+    def get_not_approved(cls):
+        return (cls.objects
+                .filter(approval_date=None, checked=True)
+                .order_by('application_date'))
+
+    @classmethod
+    def get_to_check(cls):
+        return (cls.objects
+                .filter(approval_date=None, checked=False)
+                .order_by('application_date'))
 
     class Meta:
         abstract = True

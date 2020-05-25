@@ -1,3 +1,5 @@
+from django.http import HttpResponseRedirect
+from django.views.generic.base import ContextMixin
 from django.core.exceptions import ImproperlyConfigured
 from common.util.querrys import get_client
 
@@ -8,14 +10,14 @@ class SetClientMixin:
         return super().form_valid(form)
 
 
-class GeneralFormContexMixin:
+class AddToContextMixin:
+    add_to_context = {}
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if (not hasattr(self, 'title') or not hasattr(self, 'page_title')
-                or not hasattr(self, 'submit_text')):
-            raise ImproperlyConfigured(
-                'GeneralFormContexMixin need title, page_title, submit_text attributes')
-        context['title'] = self.title
-        context['page_title'] = self.page_title
-        context['submit_text'] = self.submit_text
+        context.update(self.add_to_context)
+        context.update(self.dynamic_context())
         return context
+
+    def dynamic_context(self):
+        return {}

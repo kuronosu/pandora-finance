@@ -12,7 +12,9 @@
   <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" >
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.15.2/tingle.min.css"
+    integrity="sha256-2gnCTFNhubDm8AiLEQsyFcFKK8/MmR66o1LrZsgSApE=" crossorigin="anonymous" />
 </head>
 
 <body>
@@ -20,12 +22,38 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container">
         <a class="navbar-brand" href="/">Financiamientos Pandora</a>
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item dropdown active">
+            {% if user.is_authenticated and user.user_type == 1 %}
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">
+              Acciones
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              {% if user.is_superuser %}
+              <a class="dropdown-item" href="{% url 'accounts:signup_employee' %}">Registrar empleado</a>
+              {% endif %}
+              <a class="dropdown-item" href="{% url 'accounts:signup_client' %}">Registrar cliente</a>
+              <div class="dropdown-divider"></div>
+              {% if user.can_approve %}
+              <a class="dropdown-item" href="{% url 'financing:aprove_financing' %}">Aprobar financiaciones</a>
+              {% endif %}
+              <a class="dropdown-item" href="{% url 'financing:create_loan' %}">Crear préstamo</a>
+              <a class="dropdown-item" href="{% url 'financing:create_investment' %}">Crear inversión</a>
+              <a class="dropdown-item" href="{% url 'financing:create_guarantee' %}">Crear garantía</a>
+              <a class="dropdown-item" href="{% url 'financing:create_guarantee_type' %}">Registrar tipo de garantía</a>
+            </div>
+          </li>
+          {% endif %}
+        </ul>
         <ul class="nav navbar-nav navbar-right ml-auto">
           {% if user.is_authenticated %}
           <li class="nav-item">
-            <span class="text-light text-center">Conectado como <strong>{{ user.first_name }}</strong>. </span>
+            <a href="{% url 'accounts:logout' %}" class="nav-link">Cerrar sesión</a>
           </li>
-          <!-- <a href="{% url 'accounts:logout' %}" class="alert-link">Cerrar sesión</a> -->
+          <li class="nav-item">
+            <a class="nav-link text-light disabled">Conectado como <strong>{{ user.first_name }}</strong>.</a>
+          </li>
           {% else %}
           <li class="nav-item">
             <a href="{% url 'accounts:login' %}" class="nav-link" role="button">Iniciar sesión</a>
@@ -49,11 +77,16 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
     integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous">
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.15.2/tingle.min.js"
+    integrity="sha256-HW9FyRCNRnMtYFcp2JokPJKlIXC+FD7BK49wh7r9PoM=" crossorigin="anonymous"></script>
   <script type="text/javascript">
     $(function () {
       $('[data-toggle="tooltip"]').tooltip();
     })
   </script>
+  {% block javascript %}
+  {% endblock javascript %}
 </body>
 
 </html>

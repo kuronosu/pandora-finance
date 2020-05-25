@@ -14,7 +14,7 @@ from django.contrib.auth.views import (
     LogoutView
 )
 
-from common.mixins import GeneralFormContexMixin
+from common.mixins import AddToContextMixin
 from .forms import SignUpForm, AuthenticationForm, UserModel
 from .models import User
 from .mixins import (
@@ -32,8 +32,8 @@ class LoginView(_LoginView):
     form_class = AuthenticationForm
 
 
-class SignupView(RedirectAuthenticatedClientMixin, GeneralFormContexMixin, CreateView):
-    """Generic SingUp View"""
+class SignupView(RedirectAuthenticatedClientMixin, CreateView):
+    """Generic Signup View"""
     template_name = 'general_form.html'  # 'accounts/signup.html'
     form_class = SignUpForm
     success_url = reverse_lazy('home')
@@ -60,20 +60,24 @@ class SignupView(RedirectAuthenticatedClientMixin, GeneralFormContexMixin, Creat
         return HttpResponseRedirect(self.get_success_url())
 
 
-class SignupClientView(LoginEmployeeRequiredMixin, SignupView):
-    """SingUp Client View"""
+class SignupClientView(LoginEmployeeRequiredMixin, AddToContextMixin, SignupView):
+    """Signup Client View"""
     user_type = User.client_type
-    title = 'Registrar cliente'
-    page_title = 'Registrar cliente'
-    submit_text = 'Registrar'
+    add_to_context = {
+        'title': 'Registrar cliente',
+        'page_title': 'Registrar cliente',
+        'submit_text': 'Registrar',
+    }
 
 
-class SignupEmployeeView(LoginAdminRequiredMixin, SignupView):
-    """SingUp Employee View"""
+class SignupEmployeeView(LoginAdminRequiredMixin, AddToContextMixin, SignupView):
+    """Signup Employee View"""
     user_type = User.employee_type
-    title = 'Registrar empleado'
-    page_title = 'Registrar empleado'
-    submit_text = 'Registrar'
+    add_to_context = {
+        'title': 'Registrar empleado',
+        'page_title': 'Registrar empleado',
+        'submit_text': 'Registrar',
+    }
 
 
 class MyPasswordResetView(RedirectAuthenticatedClientMixin, PasswordResetView):

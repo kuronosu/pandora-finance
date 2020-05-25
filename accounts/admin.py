@@ -14,7 +14,7 @@ class MyUserAdmin(UserAdmin):
             'phone_number',
             'password',
         ]}),
-        ('Estados',  {'fields': ['is_staff',
+        ('Estados',  {'fields': ['is_staff', 'can_approve',
                                  'is_active', 'is_superuser', 'user_type']}),
         ("Detalles", {"fields": ["date_joined"], "classes": ["collapse"]}),
     )

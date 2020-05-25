@@ -9,8 +9,15 @@ from django.contrib.auth.forms import (
     PasswordChangeForm, PasswordResetForm, SetPasswordForm, UserCreationForm
 )
 from common.util.querrys import get_client
+from .validators import DNIValidator
 
 UserModel = get_user_model()
+
+
+class SearchClientForm(forms.Form):
+    document = forms.CharField(
+        label='Cedula del cliente', required=True, validators=[DNIValidator()])
+    widgets = {'document': forms.NumberInput(attrs={'min': 0})}
 
 
 class AuthenticationForm(AuthenticationForm):

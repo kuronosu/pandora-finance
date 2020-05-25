@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+{% if errors %}
+<div class="alert alert-danger alert-dismissible fade show rounded-0" role="alert">
+  {% for error in errors %}
+  <p {% if forloop.last %} class="mb-0" {% endif %}>{{ error }}</p>
+  {% endfor %}
+</div>
+{% endif %}
+<div class="container mt-3">
+  <div class="d-none">
+    <form id="approve-form" method="POST">{% csrf_token %}</form>
+  </div>
+  <ul class="nav nav-tabs nav-fill" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" id="investment-tab" data-toggle="tab" href="#investment-tabs" role="tab"
+        aria-controls="home" aria-selected="true">Inversiones</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" id="loan-tab" data-toggle="tab" href="#loan-tabs" role="tab" aria-controls="profile"
+        aria-selected="false">Préstamos</a>
+    </li>
+  </ul>
+  <div class="tab-content" id="financing-tabs">
+    <div class="tab-pane fade show active" id="investment-tabs" role="tabpanel">
+      <!--  -->
+      <ul class="nav nav-tabs nav-fill mb-3" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="investment-to-check-tab" data-toggle="tab" href="#investment-toCheck"
+            role="tab" aria-controls="investment-toCheck" aria-selected="true">Por revisar</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="investment-approved-tab" data-toggle="tab" href="#investment-approved" role="tab"
+            aria-controls="investment-approved" aria-selected="false">Aprobados</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="investment-rejected-tab" data-toggle="tab" href="#investment-rejected" role="tab"
+            aria-controls="investment-rejected" aria-selected="false">Rechazados</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="financing-tabs">
+        <div class="tab-pane fade show active" id="investment-toCheck" role="tabpanel">
+          <div class="card">
+            <ul class="list-group list-group-flush"></ul>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="investment-approved" role="tabpanel">
+          <div class="card">
+            <ul class="list-group list-group-flush"></ul>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="investment-rejected" role="tabpanel">
+          <div class="card">
+            <ul class="list-group list-group-flush"></ul>
+          </div>
+        </div>
+      </div>
+      <!--  -->
+    </div>
+    <div class="tab-pane fade" id="loan-tabs" role="tabpanel">
+      <!--  -->
+      <ul class="nav nav-tabs nav-fill mb-3" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="loan-to-check-tab" data-toggle="tab" href="#loan-toCheck" role="tab"
+            aria-controls="loan-toCheck" aria-selected="true">Por revisar</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="loan-approved-tab" data-toggle="tab" href="#loan-approved" role="tab"
+            aria-controls="loan-approved" aria-selected="false">Aprobados</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="loan-rejected-tab" data-toggle="tab" href="#loan-rejected" role="tab"
+            aria-controls="loan-rejected" aria-selected="false">Rechazados</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="financing-tabs">
+        <div class="tab-pane fade show active" id="loan-toCheck" role="tabpanel">
+          <div class="card">
+            <ul class="list-group list-group-flush"></ul>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="loan-approved" role="tabpanel">
+          <div class="card">
+            <ul class="list-group list-group-flush"></ul>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="loan-rejected" role="tabpanel">
+          <div class="card">
+            <ul class="list-group list-group-flush"></ul>
+          </div>
+        </div>
+      </div>
+      <!--  -->
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+
+{% block javascript %}
+<script>
+  document.urls = {
+    filter_financing: '{% url "ajax_financing:filter_financing" %}',
+  }
+</script>
+<script src='{% static "js/approve_financing.js" %}'></script>
+{% endblock javascript %}

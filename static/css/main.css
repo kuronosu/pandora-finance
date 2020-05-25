@@ -7,3 +7,6 @@ input::-webkit-inner-spin-button {
   padding: 0.5rem 0.75rem;
   color: rgb(13, 13, 82);
 }
+body {
+  background-color: whitesmoke !important;
+}

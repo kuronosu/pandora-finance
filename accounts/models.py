@@ -40,7 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         'Dirección 2', max_length=1024, blank=True, null=True)
     birthdate = models.DateField('Fecha de nacimiento')
     user_type = models.PositiveSmallIntegerField('Tipo de usuario', choices=USER_TYPE_CHOICES)
-    can_authorize = models.BooleanField('Puede autorizar', default=False)
+    can_approve = models.BooleanField('Puede aprobar', default=False)
     is_staff = models.BooleanField('staff status', default=False)
     is_active = models.BooleanField(
         'active',

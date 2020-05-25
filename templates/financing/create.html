@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ page_title }}{% endblock title %}
+
+{% block content %}
+{% if form.non_field_errors %}
+<div class="alert alert-danger alert-dismissible fade show rounded-0" role="alert">
+  {% for error in form.non_field_errors %}
+  <p {% if forloop.last %} class="mb-0" {% endif %}>{{ error }}</p>
+  {% endfor %}
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+{% endif %}
+
+<div class="container mt-3">
+  <h2 class="text-left mb-4" id="h2_title">{{ title }}</h2>
+
+
+  <form id="serach-client-form" class="d-none" action="{% url 'ajax_accounts:search_user' %}" method="POST" class="">
+    {% for field in search_client_form %}
+    <div class="form-group row">
+      <label for="{{ field.id_for_label }}" class="col-sm-3 col-form-label">{{ field.label }}</label>
+      {% render_field field class="form-control col-sm-9" %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Buscar cliente</button>
+  </form>
+
+  <form id="create-financing-form" class="d-none" method="post" class="">
+    {% csrf_token %}
+    {% for hidden_field in form.hidden_fields %}
+    {{ hidden_field }}
+    {% endfor %}
+
+    {% for field in form.visible_fields %}
+    <div class="form-group row">
+      <label for="{{ field.id_for_label }}" class="col-sm-3 col-form-label">{{ field.label }}</label>
+
+      {% if form.is_bound %}
+      {% if field.errors %}
+      {% render_field field class="form-control is-invalid col-sm-9" %}
+      {% for error in field.errors %}
+      <div class="invalid-feedback">
+        {{ error }}
+      </div>
+      {% endfor %}
+      {% else %}
+      {% render_field field class="form-control is-valid col-sm-9" %}
+      {% endif %}
+      {% else %}
+      {% render_field field class="form-control col-sm-9" %}
+      {% endif %}
+
+      {% if field.help_text %}
+      <small class="form-text text-muted">{{ field.help_text }}</small>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="form-group">
+      <button type="submit" class="btn btn-primary">{{ submit_text }}</button>
+    </div>
+  </form>
+</div>
+{% endblock content %}
+
+{% block javascript %}
+<script>
+  document.urls = {
+    user_guarantees: '{% url "ajax_financing:user_guarantees" %}',
+    signup_client: '{% url "accounts:signup_client" %}',
+  }
+</script>
+<script src='{% static "js/financing_create.js" %}'></script>
+{% endblock javascript %}
