@@ -9,7 +9,7 @@ from django.views.generic.list import ListView
 from django.views.generic.base import TemplateView
 from common.mixins import SetClientMixin, AddToContextMixin
 from accounts.mixins import LoginEmployeeRequiredMixin, CanApproveMixin
-from accounts.forms import SearchClientForm
+from accounts.forms import SearchClientDocumentForm
 
 from .models import Loan, Investment, Guarantee, GuaranteeType
 from .forms import (LoanCreateForm, InvestmentCreateForm,
@@ -52,7 +52,7 @@ class CreateLoanView(LoginEmployeeRequiredMixin, AddToContextMixin, CreateView):
         'submit_text': 'Guardar',
         'title': 'Crear préstamo',
         'page_title': 'Crear préstamo',
-        'search_client_form': SearchClientForm,
+        'search_client_form': SearchClientDocumentForm,
     }
 
 
@@ -66,7 +66,7 @@ class CreateInvestmentView(LoginEmployeeRequiredMixin, AddToContextMixin, Create
         'submit_text': 'Guardar',
         'title': 'Crear inversión',
         'page_title': 'Crear inversión',
-        'search_client_form': SearchClientForm,
+        'search_client_form': SearchClientDocumentForm,
     }
 
 

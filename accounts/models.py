@@ -59,8 +59,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name_plural = 'usuarios'
         swappable = 'AUTH_USER_MODEL'
         constraints = [
-            CheckConstraint(check=(Q(can_authorize=True) & Q(user_type=1)) | (
-                Q(can_authorize=False) & Q(user_type__in=(1, 2))), name='can_authorize_only_employee'),
+            CheckConstraint(check=(Q(can_approve=True) & Q(user_type=1)) | (
+                Q(can_approve=False) & Q(user_type__in=(1, 2))), name='can_approve_only_employee'),
         ]
 
     def clean(self):

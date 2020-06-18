@@ -9,15 +9,24 @@ from django.contrib.auth.forms import (
     PasswordChangeForm, PasswordResetForm, SetPasswordForm, UserCreationForm
 )
 from common.util.querrys import get_client
-from .validators import DNIValidator
+from .validators import DNIValidator, NameValidator
 
 UserModel = get_user_model()
 
 
-class SearchClientForm(forms.Form):
+class SearchClientDocumentForm(forms.Form):
     document = forms.CharField(
         label='Cedula del cliente', required=True, validators=[DNIValidator()])
     widgets = {'document': forms.NumberInput(attrs={'min': 0})}
+
+
+class SearchClientNameForm(forms.Form):
+    name = forms.CharField(label='Nombre del cliente:',
+                           required=False, validators=[NameValidator()],
+                           widget=forms.TextInput(attrs={'placeholder': 'Nombre del cliente'}))
+    document = forms.CharField(
+        label='Cedula del cliente', required=False, validators=[DNIValidator()],
+        widget=forms.NumberInput(attrs={'min': 0, 'placeholder': 'Cedula del cliente'}))
 
 
 class AuthenticationForm(AuthenticationForm):
