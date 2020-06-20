@@ -1,11 +1,11 @@
 from django.contrib.auth import authenticate, login, get_user_model
-# from django.contrib.auth.forms import AuthenticationForm
+from django.http import HttpResponseRedirect, JsonResponse, Http404
+from django.views.generic.edit import CreateView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.db.models.functions import Concat
-from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.db.models import Value as V
 from django.utils.text import capfirst
 from django.urls import reverse_lazy
@@ -18,8 +18,12 @@ from django.contrib.auth.views import (
 )
 from financing.models import Loan, Investment
 from common.mixins import AddToContextMixin
-from .forms import SignUpForm, AuthenticationForm, SearchClientNameForm
 from .models import User
+from .forms import (
+    SignUpForm,
+    AuthenticationForm,
+    SearchClientNameForm,
+)
 from .mixins import (
     RedirectAuthenticatedClientMixin,
     LoginEmployeeRequiredMixin,
@@ -30,13 +34,16 @@ User = get_user_model()
 
 
 class LoginView(_LoginView):
+    """View for login."""
+
     template_name = 'accounts/login.html'
     redirect_authenticated_user = True
     form_class = AuthenticationForm
 
 
 class SignupView(RedirectAuthenticatedClientMixin, CreateView):
-    """Generic Signup View"""
+    """Generic Signup View."""
+
     template_name = 'general_form.html'  # 'accounts/signup.html'
     form_class = SignUpForm
     success_url = reverse_lazy('home')
@@ -44,12 +51,14 @@ class SignupView(RedirectAuthenticatedClientMixin, CreateView):
     user_type = None
 
     def get_user_type(self):
+        """Return the user type."""
         if self.user_type not in self.user_types:
             raise ImproperlyConfigured(
                 f'user_type must be one of {self.user_types}')
         return self.user_type
 
     def form_valid(self, form):
+        """Validate the form."""
         form.instance.user_type = self.get_user_type()
         self.object = form.save()
         password = form.cleaned_data.get('password1')
@@ -64,7 +73,8 @@ class SignupView(RedirectAuthenticatedClientMixin, CreateView):
 
 
 class SignupClientView(LoginEmployeeRequiredMixin, AddToContextMixin, SignupView):
-    """Signup Client View"""
+    """View to signup client."""
+
     user_type = User.client_type
     add_to_context = {
         'title': 'Registrar cliente',
@@ -74,7 +84,8 @@ class SignupClientView(LoginEmployeeRequiredMixin, AddToContextMixin, SignupView
 
 
 class SignupEmployeeView(LoginAdminRequiredMixin, AddToContextMixin, SignupView):
-    """Signup Employee View"""
+    """View to signup employee."""
+
     user_type = User.employee_type
     add_to_context = {
         'title': 'Registrar empleado',
@@ -100,22 +111,18 @@ class MyPasswordResetConfirmView(RedirectAuthenticatedClientMixin, PasswordReset
 
 
 class ClientSearchView(LoginEmployeeRequiredMixin, AddToContextMixin, ListView):
+    """View to search client."""
+
     template_name = 'accounts/search_client.html'
     model = User
     form_class = SearchClientNameForm
-    login_url = reverse_lazy('accounts:login')
-
-    def get(self, request, *args, **kwargs):
-        if request.is_ajax():
-            clients = self.get_queryset()\
-                .values('document', 'first_name', 'last_name', 'phone_number', 'email')
-            return JsonResponse({'clients': list(clients), 'ok': True}, status=200)
-        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
+        """Return the list of items for this view."""
         name = self.request.GET.get('name', '').strip()
         document = self.request.GET.get('document', '').strip()
-        queryset = self.model.objects.filter(user_type=self.model.types[1])
+        queryset = self.model.objects.filter(
+            user_type=self.model.types[1], is_active=True)
         if document != '':
             return queryset.filter(document__icontains=document)
         if name != '':
@@ -125,40 +132,70 @@ class ClientSearchView(LoginEmployeeRequiredMixin, AddToContextMixin, ListView):
         return self.model.objects.none()
 
     def dynamic_context(self):
+        """Return the list of items for this view."""
         return {'form': self.form_class({
             'name': self.request.GET.get('name', '').strip(),
             'document': self.request.GET.get('document', '').strip()
         })}
 
 
-class ClientDetailsView(DetailView):
+class ClientDetailsView(LoginEmployeeRequiredMixin, AddToContextMixin, DetailView):
+    """View to vizualizate client details."""
+
     model = User
-    template_name='accounts/details.html'
-    pk_url_kwarg = 'document'
-    queryset = User.objects.filter(user_type=User.types[1])
+    template_name = 'accounts/details.html'
+    queryset = User.objects.filter(user_type=User.types[1], is_active=True)
+
+    def dynamic_context(self):
+        return {
+            'loans': Loan.objects.filter(client=self.object),
+            'investments': Investment.objects.filter(client=self.object),
+            'user': self.request.user
+        }
+
+
+class UpdateClientView(LoginEmployeeRequiredMixin, AddToContextMixin, UpdateView):
+    """View to update client."""
+
+    model = User
+    template_name = 'general_form.html'
+    add_to_context = {
+        'title': 'Actualizar cliente',
+        'page_title': 'Actualizar cliente',
+        'submit_text': 'Actualizar',
+    }
+    fields = ('document',
+              'first_name',
+              'last_name',
+              'phone_number',
+              'email',
+              'address1',
+              'address2',
+              'birthdate')
+
+    def dynamic_context(self):
+        return {'user': self.request.user}
+
+
+class SelfDetailsView(LoginRequiredMixin, AddToContextMixin, DetailView):
+    """View to vizualizate loged client details."""
+
+    model = User
+    login_url = reverse_lazy('accounts:login')
+    template_name = 'accounts/self_details.html'
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+        if not self.object.is_client:
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return self.render_to_response(context)
 
     def get_object(self, queryset=None):
-        if queryset is None:
-            queryset = self.get_queryset()
-        document = self.kwargs.get(self.pk_url_kwarg)
-        try:
-            if document:
-                return queryset.filter(document=document).get()
-        except queryset.model.DoesNotExist:
-            pass
-        raise Http404()
+        return self.request.user
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['loans'] = Loan.objects.filter(client=self.object)
-        context['investments'] = Investment.objects.filter(client=self.object)
-        context['user'] = self.request.user
-        return context
-
-
-# class ProfileView(DetailView):
-#     model = User
-#     template_name = 'accounts/profile.html'
-#     slug_field = 'username'
-#     slug_url_kwarg = 'username'
-#     context_object_name = 'userObject'
+    def dynamic_context(self):
+        return {
+            'loans': Loan.objects.filter(client=self.object),
+            'investments': Investment.objects.filter(client=self.object)
+        }

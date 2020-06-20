@@ -1,3 +1,4 @@
+from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -15,7 +16,7 @@ class RedirectAuthenticatedMixin:
         if hasattr(self, 'request'):
             if self.request.user.is_authenticated:
                 return HttpResponseRedirect('/')
-        return super(RedirectAuthenticatedClientMixin, self).dispatch(request, *args, **kwargs)
+        return super(RedirectAuthenticatedMixin, self).dispatch(request, *args, **kwargs)
 
 
 class EmployeeRequiredMixin:
@@ -26,6 +27,7 @@ class EmployeeRequiredMixin:
 
 
 class LoginEmployeeRequiredMixin(LoginRequiredMixin, EmployeeRequiredMixin):
+    login_url = reverse_lazy('accounts:login')
     """Verify that the current user is authenticated and is employee."""
 
 
@@ -37,6 +39,7 @@ class AdminRequiredMixin:
 
 
 class LoginAdminRequiredMixin(LoginRequiredMixin, AdminRequiredMixin):
+    login_url = reverse_lazy('accounts:login')
     """Verify that the current user is authenticated and is admin."""
 
 

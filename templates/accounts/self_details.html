@@ -8,9 +8,7 @@
   <div>
     <div>
       <h2>{{object.first_name}} {{object.last_name}}</h2>
-      <h4>{{object.id}}</h4>
     </div>
-    <a href="{% url 'accounts:update_client' object.id %}">Actualizar</a>
   </div>
   <div class="card mb-3">
     <div class="card-body py-2">
@@ -19,8 +17,7 @@
         Correo: {{object.email}}
         Dirección: {{object.address1}}
         Dirección 2: {% if object.address2 %}{{object.address2}}{% else %}No tiene{% endif %}
-        Fecha de nacimiento:{{object.birthdate}}
-        Fecha de Registro: {{object.date_joined}}</p>
+        Fecha de nacimiento:{{object.birthdate}}</p>
     </div>
   </div>
   <div>

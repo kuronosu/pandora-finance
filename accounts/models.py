@@ -3,6 +3,7 @@ import uuid
 from django.db.models.constraints import CheckConstraint, Q
 from django.db import models
 from django.utils import timezone
+from django.urls import reverse_lazy
 from django.core.mail import send_mail
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import PermissionsMixin
@@ -81,6 +82,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     def email_user(self, subject, message, from_email=None, **kwargs):
         """Send an email to this user."""
         send_mail(subject, message, from_email, [self.email], **kwargs)
+
+    def get_absolute_url(self):
+        return reverse_lazy('accounts:client_details', kwargs={'pk': self.id})
 
     @property
     def is_client(self):

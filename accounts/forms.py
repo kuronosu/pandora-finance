@@ -48,7 +48,6 @@ class SignUpForm(UserCreationForm):
         for field in self.fields.values():
             if field.required:
                 field.label = f'*{field.label}'
-            field.label += ':'
 
     def clean_document(self):
         if get_client(self.cleaned_data['document']):

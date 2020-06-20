@@ -110,10 +110,10 @@ function getNewData(data, $container) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  getNewData(createFilterFormData(0, 0), document.getElementById('investment-toCheck').firstElementChild.firstElementChild)
-  getNewData(createFilterFormData(0, 1), document.getElementById('investment-approved').firstElementChild.firstElementChild)
-  getNewData(createFilterFormData(0, 2), document.getElementById('investment-rejected').firstElementChild.firstElementChild)
-  getNewData(createFilterFormData(1, 0), document.getElementById('loan-toCheck').firstElementChild.firstElementChild)
-  getNewData(createFilterFormData(1, 1), document.getElementById('loan-approved').firstElementChild.firstElementChild)
-  getNewData(createFilterFormData(1, 2), document.getElementById('loan-rejected').firstElementChild.firstElementChild)
+  getNewData(createFilterFormData(1, 0), document.getElementById('investment-toCheck').firstElementChild.firstElementChild)
+  getNewData(createFilterFormData(1, 1), document.getElementById('investment-approved').firstElementChild.firstElementChild)
+  getNewData(createFilterFormData(1, 2), document.getElementById('investment-rejected').firstElementChild.firstElementChild)
+  getNewData(createFilterFormData(0, 0), document.getElementById('loan-toCheck').firstElementChild.firstElementChild)
+  getNewData(createFilterFormData(0, 1), document.getElementById('loan-approved').firstElementChild.firstElementChild)
+  getNewData(createFilterFormData(0, 2), document.getElementById('loan-rejected').firstElementChild.firstElementChild)
 })

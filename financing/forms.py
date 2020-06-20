@@ -11,7 +11,6 @@ class BaseModelForm(forms.ModelForm):
         for field in self.fields.values():
             if field.required:
                 field.label = f'*{field.label}'
-            field.label += ':'
 
 
 class GuaranteeTypeCreateForm(BaseModelForm):
