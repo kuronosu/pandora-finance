@@ -51,4 +51,5 @@ class __CanApproveMixin:
 
 
 class CanApproveMixin(LoginRequiredMixin, __CanApproveMixin):
+    login_url = reverse_lazy('accounts:login')
     """Verify that the current user is authenticated and can approve financings."""
