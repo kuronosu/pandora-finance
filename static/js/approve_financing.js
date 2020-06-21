@@ -75,9 +75,13 @@ function launchModal(data) {
     closeLabel: 'Cancelar',
   })
   modal.setContent(createModalCard(data))
-  modal.addFooterBtn('Aprobar', 'tingle-btn tingle-btn--primary', _ => { createFormToSubmit('1', data.pk, data.model).submit() })
-  modal.addFooterBtn('Rechazar', 'tingle-btn tingle-btn--danger', _ => { createFormToSubmit('0', data.pk, data.model).submit() })
-  modal.addFooterBtn('Dejar para despues', 'tingle-btn tingle-btn--default', _ => modal.close())
+  if (!data.fields.checked){
+    modal.addFooterBtn('Aprobar', 'tingle-btn tingle-btn--primary', _ => { createFormToSubmit('1', data.pk, data.model).submit() })
+    modal.addFooterBtn('Rechazar', 'tingle-btn tingle-btn--danger', _ => { createFormToSubmit('0', data.pk, data.model).submit() })
+    modal.addFooterBtn('Dejar para despues', 'tingle-btn tingle-btn--default', _ => modal.close())
+  } else {
+    modal.addFooterBtn('Cerrar', 'tingle-btn tingle-btn--default', _ => modal.close())
+  }
   modal.open()
 }
 

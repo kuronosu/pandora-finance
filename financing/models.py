@@ -4,7 +4,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.core.validators import MinValueValidator
 from common.util import generate_code
-from .validators import BankAccountValidator
+from .validators import BankAccountValidator, VoucherValidator
 
 
 def generate_code_guarantee():
@@ -112,3 +112,40 @@ class Investment(Finance):
     class Meta:
         verbose_name = 'Inversión'
         verbose_name_plural = 'Inversiónes'
+
+
+class Payment(models.Model):
+    PAYMENT_METHODS_CHOICES = (
+        (0, 'Pago en efectivo'),
+        (1, 'Depósito bancario'),
+        (2, 'Cheque'),
+        (3, 'Transferencia directa'),
+    )
+    amount = models.DecimalField('Monto', decimal_places=2, max_digits=12)
+    planned_date = models.DateField('Fecha planificada')
+    effective_date = models.DateTimeField(
+        'Fecha efectiva', blank=True, null=True)
+    method = models.PositiveSmallIntegerField(
+        'Método de pago', choices=PAYMENT_METHODS_CHOICES, blank=True, null=True)
+    voucher = models.CharField('Comprobante', max_length=100, validators=[VoucherValidator()], blank=True, null=True)
+
+    class Meta:
+        abstract = True
+
+
+class LoanPayment(Payment):
+    finance = models.ForeignKey(Loan, verbose_name='Préstamo',
+                                related_name='loan_payment', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Pago de préstamo'
+        verbose_name_plural = 'Pagos de préstamo'
+
+
+class InvestmentPayment(Payment):
+    finance = models.ForeignKey(Investment, verbose_name='Inversión',
+                                related_name='investment_payment', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Pago de inversión'
+        verbose_name_plural = 'Pagos de inversión'

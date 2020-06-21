@@ -165,14 +165,3 @@ LOGOUT_URL = 'logout'
 LOGIN_REDIRECT_URL = 'home'
 
 LOGOUT_REDIRECT_URL = 'home'
-
-
-# Messages built-in framework
-
-MESSAGE_TAGS = {
-    messages.DEBUG: 'alert-secondary',
-    messages.INFO: 'alert-info',
-    messages.SUCCESS: 'alert-success',
-    messages.WARNING: 'alert-warning',
-    messages.ERROR: 'alert-danger',
-}

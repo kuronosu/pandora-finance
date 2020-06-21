@@ -4,13 +4,15 @@
 {% block title %}{{object.first_name}} {{object.last_name}}{% endblock title %}
 
 {% block content %}
-<div class="container mt-2">
-  <div>
+<div class="container mt-2 mb-3">
+  <div class="d-flex flex-row justify-content-between align-items-center">
     <div>
       <h2>{{object.first_name}} {{object.last_name}}</h2>
       <h4>{{object.id}}</h4>
     </div>
-    <a href="{% url 'accounts:update_client' object.id %}">Actualizar</a>
+    <div class="align-middle">
+      <a class="btn btn-primary" href="{% url 'accounts:update_client' object.id %}" role="button">Actualizar</a>
+    </div>
   </div>
   <div class="card mb-3">
     <div class="card-body py-2">

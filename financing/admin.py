@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Investment, Loan, Guarantee, GuaranteeType
+from .models import Investment, Loan, Guarantee, GuaranteeType, LoanPayment, InvestmentPayment
 
 # Register your models here.
 
@@ -12,4 +12,8 @@ class FinanceAdmin(admin.ModelAdmin):
 
 @admin.register(Guarantee, GuaranteeType)
 class GuaranteeAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(LoanPayment, InvestmentPayment)
+class PaymentAdmin(admin.ModelAdmin):
     pass

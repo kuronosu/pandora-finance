@@ -11,9 +11,36 @@ from common.mixins import SetClientMixin, AddToContextMixin
 from accounts.mixins import LoginEmployeeRequiredMixin, CanApproveMixin
 from accounts.forms import SearchClientDocumentForm
 
-from .models import Loan, Investment, Guarantee, GuaranteeType
+from .models import (Loan, Investment, Guarantee, GuaranteeType,
+                     LoanPayment, InvestmentPayment)
 from .forms import (LoanCreateForm, InvestmentCreateForm,
                     GuaranteeTypeCreateForm, GuaranteeCreateForm)
+
+
+def generate_payment_schedule(finance_object):
+    if type(finance_object) == Loan:
+        Payment = LoanPayment
+    elif type(finance_object) == Investment:
+        Payment = InvestmentPayment
+    else:
+        return
+
+    # A = Vp*((i*(1+i)^n)/(1+i)^n - 1)
+    _ = pow(1 + finance_object.interest_rate, finance_object.installments_number)
+    amount = finance_object.amount * ((finance_object.interest_rate * _) / (_ - 1))
+
+    for i in range(finance_object.installments_number):
+        try:
+            year = finance_object.start_date.year
+            month = finance_object.start_date.month + i
+            day = finance_object.start_date.day if finance_object.start_date.day <= 28 else 28
+            if month > 12:
+                year += month // 12
+                month %= 12
+            planned_date = datetime(year, month, day)
+            Payment.objects.create(finance=finance_object, amount=amount, planned_date=planned_date)
+        except Exception as e:
+            pass
 
 
 class CreateGuaranteeTypeView(LoginEmployeeRequiredMixin, AddToContextMixin, CreateView):
@@ -81,7 +108,6 @@ class FinancingApproveListView(CanApproveMixin, AddToContextMixin, TemplateView)
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        print(request.POST, kwargs)
         model = request.POST.get('model', None)
         approve = request.POST.get('approve', None)
         financing = request.POST.get('financing', None)
@@ -108,25 +134,26 @@ class FinancingApproveListView(CanApproveMixin, AddToContextMixin, TemplateView)
                 if approve == True:
                     tz = timezone.now()
                     obj.approval_date = tz
-                    obj.start_date = datetime(tz.year, tz.month + 1, 1)
-                    new_month = obj.installments_number + 1
+                    obj.start_date = datetime(tz.year, tz.month + 1, 10)
+                    new_month = tz.month + obj.installments_number
                     new_year = tz.year
                     if (new_month > 12):
                         new_year += new_month // 12
-                        new_month = new_month % 12 + tz.month
-                    obj.end_date = datetime(new_year, new_month, 1)
+                        new_month = new_month % 12
+                    obj.end_date = datetime(new_year, new_month, 10)
                 else:
                     obj.approval_date = None
                     obj.start_date = None
                     obj.end_date = None
                 obj.checked = True
                 obj.save()
+                if obj.approval_date:
+                    generate_payment_schedule(obj)
             else:
                 self.errors = [
                     'Error al realizar lo operacion, esta financiacion ya fue revisada']
-        except:
+        except Exception as e:
             self.errors = ['Error al realizar lo operacion']
-        print(self.errors)
         return super().get(request, *args, **kwargs)
 
     def dynamic_context(self):
