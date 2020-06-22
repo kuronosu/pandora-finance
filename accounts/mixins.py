@@ -27,7 +27,6 @@ class EmployeeRequiredMixin:
 
 
 class LoginEmployeeRequiredMixin(LoginRequiredMixin, EmployeeRequiredMixin):
-    login_url = reverse_lazy('accounts:login')
     """Verify that the current user is authenticated and is employee."""
 
 
@@ -39,7 +38,6 @@ class AdminRequiredMixin:
 
 
 class LoginAdminRequiredMixin(LoginRequiredMixin, AdminRequiredMixin):
-    login_url = reverse_lazy('accounts:login')
     """Verify that the current user is authenticated and is admin."""
 
 
@@ -51,5 +49,4 @@ class __CanApproveMixin:
 
 
 class CanApproveMixin(LoginRequiredMixin, __CanApproveMixin):
-    login_url = reverse_lazy('accounts:login')
     """Verify that the current user is authenticated and can approve financings."""

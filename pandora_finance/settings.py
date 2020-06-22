@@ -158,9 +158,9 @@ STATICFILES_DIRS = (
 
 AUTH_USER_MODEL = 'accounts.User'
 
-LOGIN_URL = 'login'
+LOGIN_URL = 'accounts:login'
 
-LOGOUT_URL = 'logout'
+LOGOUT_URL = 'accounts:logout'
 
 LOGIN_REDIRECT_URL = 'home'
 
