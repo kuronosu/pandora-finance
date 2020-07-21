@@ -9,5 +9,6 @@ urlpatterns = [
     path('create/investment/', views.CreateInvestmentView.as_view(), name='create_investment'),
     path('create/guarantee/', views.CreateGuaranteeView.as_view(), name='create_guarantee'),
     path('create/guarantee/type/', views.CreateGuaranteeTypeView.as_view(), name='create_guarantee_type'),
-    path('approve/', views.FinancingApproveListView.as_view(), name='aprove_financing')
+    path('approve/', views.FinancingApproveListView.as_view(), name='aprove_financing'),
+    path('statistics/', views.StatisticsView.as_view(), name='statistics'),
 ]

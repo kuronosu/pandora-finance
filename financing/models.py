@@ -2,7 +2,10 @@ from decimal import Decimal
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
+from django.db.models import Count
+from django.db.models.functions import TruncMonth
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ImproperlyConfigured
 from common.util import generate_code
 from .validators import BankAccountValidator, VoucherValidator
 
@@ -78,6 +81,20 @@ class Finance(models.Model):
                 .filter(approval_date=None, checked=False)
                 .order_by('application_date'))
 
+    @classmethod
+    def get_actives(cls, payment_cls):
+        active_finance = [finance.code for finance in cls.get_approved()
+                          if payment_cls.to_pay(finance) != 0]
+        return cls.objects.filter(code__in=active_finance)
+
+    @classmethod
+    def group_by_month(cls, attr):
+        if attr not in ['application_date', 'approval_date', 'start_date', 'end_date']:
+            raise ImproperlyConfigured(
+                'The attr must be one of application_date, approval_date, start_date, end_date')
+        return [{'month': d['month'].strftime('%Y-%m'), 'count': d['c']} for d in
+                cls.objects.exclude(**{attr: None}).annotate(month=TruncMonth(attr)).values('month').annotate(c=Count('code')).values('month', 'c')]
+
     class Meta:
         abstract = True
 
@@ -127,10 +144,15 @@ class Payment(models.Model):
         'Fecha efectiva', blank=True, null=True)
     method = models.PositiveSmallIntegerField(
         'Método de pago', choices=PAYMENT_METHODS_CHOICES, blank=True, null=True)
-    voucher = models.CharField('Comprobante', max_length=100, validators=[VoucherValidator()], blank=True, null=True)
+    voucher = models.CharField('Comprobante', max_length=100, validators=[
+                               VoucherValidator()], blank=True, null=True)
 
     class Meta:
         abstract = True
+
+    @classmethod
+    def to_pay(cls, f):
+        return cls.objects.filter(finance=f, effective_date=None).count()
 
 
 class LoanPayment(Payment):

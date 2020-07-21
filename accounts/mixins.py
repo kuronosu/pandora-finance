@@ -41,12 +41,12 @@ class LoginAdminRequiredMixin(LoginRequiredMixin, AdminRequiredMixin):
     """Verify that the current user is authenticated and is admin."""
 
 
-class __CanApproveMixin:
+class CanApproveMixin:
     def dispatch(self, request, *args, **kwargs):
         if not self.request.user.can_approve:
             return HttpResponseRedirect('/')
         return super().dispatch(request, *args, **kwargs)
 
 
-class CanApproveMixin(LoginRequiredMixin, __CanApproveMixin):
+class ChiefCreditLoginRequiredMixin(LoginRequiredMixin, EmployeeRequiredMixin, CanApproveMixin):
     """Verify that the current user is authenticated and can approve financings."""

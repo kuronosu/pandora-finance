@@ -10,3 +10,22 @@ input::-webkit-inner-spin-button {
 body {
   background-color: whitesmoke !important;
 }
+
+.financing-month-filter {
+  position: relative;
+  /* background: orange; */
+  bottom: 300px;
+  left: 40%;
+  width: 60%;
+}
+.financing-month-filter input[type="month"] {
+  width: 40%;
+}
+.financing-month-filter input[type="submit"] {
+  width: 15%;
+}
+#groupedMonthChartError {
+  position: relative;
+  bottom: 300px;
+  color: red;
+}

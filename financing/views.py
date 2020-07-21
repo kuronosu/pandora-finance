@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from django.conf import settings
 from django.utils import timezone
@@ -8,8 +9,10 @@ from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.views.generic.base import TemplateView
 from common.mixins import SetClientMixin, AddToContextMixin
-from accounts.mixins import LoginEmployeeRequiredMixin, CanApproveMixin
+from django.db.models import Sum, Avg, Count, Variance, Max, Min
 from accounts.forms import SearchClientDocumentForm
+from accounts.mixins import (
+    LoginEmployeeRequiredMixin, ChiefCreditLoginRequiredMixin)
 
 from .models import (Loan, Investment, Guarantee, GuaranteeType,
                      LoanPayment, InvestmentPayment)
@@ -26,8 +29,10 @@ def generate_payment_schedule(finance_object):
         return
 
     # A = Vp*((i*(1+i)^n)/(1+i)^n - 1)
-    _ = pow(1 + finance_object.interest_rate, finance_object.installments_number)
-    amount = finance_object.amount * ((finance_object.interest_rate * _) / (_ - 1))
+    _ = pow(1 + finance_object.interest_rate,
+            finance_object.installments_number)
+    amount = finance_object.amount * \
+        ((finance_object.interest_rate * _) / (_ - 1))
 
     for i in range(finance_object.installments_number):
         try:
@@ -38,7 +43,8 @@ def generate_payment_schedule(finance_object):
                 year += month // 12
                 month %= 12
             planned_date = datetime(year, month, day)
-            Payment.objects.create(finance=finance_object, amount=amount, planned_date=planned_date)
+            Payment.objects.create(
+                finance=finance_object, amount=amount, planned_date=planned_date)
         except Exception as e:
             pass
 
@@ -97,7 +103,7 @@ class CreateInvestmentView(LoginEmployeeRequiredMixin, AddToContextMixin, Create
     }
 
 
-class FinancingApproveListView(CanApproveMixin, AddToContextMixin, TemplateView):
+class FinancingApproveListView(ChiefCreditLoginRequiredMixin, AddToContextMixin, TemplateView):
     template_name = 'financing/approve.html'
     errors = []
     add_to_context = {
@@ -159,4 +165,62 @@ class FinancingApproveListView(CanApproveMixin, AddToContextMixin, TemplateView)
     def dynamic_context(self):
         return {
             'errors': self.errors
+        }
+
+
+class StatisticsView(ChiefCreditLoginRequiredMixin, AddToContextMixin, TemplateView):
+    template_name = 'financing/statistics.html'
+
+    def dynamic_context(self):
+        tl = Loan.get_approved().count()
+        tla = Loan.get_actives(LoanPayment).count()
+        ti = Investment.get_approved().count()
+        tia = Investment.get_actives(InvestmentPayment).count()
+        return {
+            'total_count': json.dumps([
+                ['Préstamos', Loan.objects.count()],
+                ['Inversiónes', Investment.objects.count()],
+            ]),
+            'total_amount': json.dumps([
+                ['Préstamos', float(Loan.objects.all().aggregate(Sum('amount'))['amount__sum'])],
+                ['Inversiónes', float(Investment.objects.all().aggregate(Sum('amount'))['amount__sum'])],
+            ]),
+            'avg_amount': json.dumps([
+                ['Préstamos',   float(Loan.objects.all().aggregate(Avg('amount'))['amount__avg'])],
+                ['Inversiónes', float(Investment.objects.all().aggregate(Avg('amount'))['amount__avg'])],
+            ]),
+            'state': {
+                'loan': {
+                    'approved': json.dumps([
+                        ['Activos', tla],
+                        ['Completados', tl - tla],
+                    ]),
+                    'all': json.dumps([
+                        ['Aprobados', tl],
+                        ['No aprobados', Loan.get_not_approved().count()],
+                        ['Sin revisar', Loan.get_to_check().count()],
+                    ])
+                },
+                'investment': {
+                    'approved': json.dumps([
+                        ['Activas', tia],
+                        ['Completadas', ti - tia],
+                    ]),
+                    'all': json.dumps([
+                        ['Aprobados', ti],
+                        ['No aprobados', Investment.get_not_approved().count()],
+                        ['Sin revisar', Investment.get_to_check().count()],
+                    ])
+                },
+            },
+            'grouped_by_month': json.dumps({
+                'loan': {
+                    'application': Loan.group_by_month('application_date'),
+                    'approved': Loan.group_by_month('approval_date')
+                },
+                'investment': {
+                    'application': Investment.group_by_month('application_date'),
+                    'approved': Investment.group_by_month('approval_date')
+                }
+            })
         }

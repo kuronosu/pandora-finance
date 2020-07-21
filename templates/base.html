@@ -9,6 +9,8 @@
   <link rel="icon" href="{% static 'img/favicon.png' %}">
   {% block styles %}
   {% endblock styles %}
+  {% block headScripts %}
+  {% endblock headScripts %}
   <link rel="stylesheet" type="text/css" href="{% static 'css/main.css' %}">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
     integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -37,6 +39,7 @@
               <div class="dropdown-divider"></div>
               {% if user.can_approve %}
               <a class="dropdown-item" href="{% url 'financing:aprove_financing' %}">Aprobar financiaciones</a>
+              <a class="dropdown-item" href="{% url 'financing:statistics' %}">Estadísticas</a>
               {% endif %}
               <a class="dropdown-item" href="{% url 'financing:create_loan' %}">Crear préstamo</a>
               <a class="dropdown-item" href="{% url 'financing:create_investment' %}">Crear inversión</a>

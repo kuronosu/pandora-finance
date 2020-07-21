@@ -1,0 +1,42 @@
+{% extends "base.html" %} {% load static %} {% load widget_tweaks %}
+{% block title %}{{ page_title }}{% endblock title %}
+{% block headScripts %}
+<script
+  type="text/javascript"
+  src="https://www.gstatic.com/charts/loader.js"
+></script>
+{% endblock headScripts %}
+{% block content %}
+<div class="container my-5 d-flex flex-wrap">
+  <div id="totalChart" style="width: 33%; height: 300px;"></div>
+  <div id="allLoansChart" style="width: 33%; height: 300px;"></div>
+  <div id="allInvestmentChart" style="width: 33%; height: 300px;"></div>
+  <div id="totalAmountChart" style="width: 33%; height: 300px;"></div>
+  <div id="approvedLoansChart" style="width: 33%; height: 300px;"></div>
+  <div id="approvedInvestmentChart" style="width: 33%; height: 300px;"></div>
+  <div id="avgAmountChart" style="width: 33%; height: 300px;"></div>
+  <div class="pl-4" style="width: 66%; height: 300px; background-color: white;">
+    <div id="groupedMonthChart" style="width: 100%; height: 100%;"></div>
+    <span id="groupedMonthChartError"></span>
+    <form id="filter-month-form" class="financing-month-filter">
+      <input id="start_month" type="month" name="start_month">
+      <input id="end_month" type="month" name="end_month">
+      <input type="submit" value="Filtrar">
+    </form>
+  </div>
+</div>
+{% endblock content %}
+{% block javascript %}
+
+<script>
+  window.total = JSON.parse("{{total_count|escapejs}}");
+  window.totalAmount = JSON.parse("{{total_amount|escapejs}}");
+  window.avgAmount = JSON.parse("{{avg_amount|escapejs}}");
+  window.allLoans = JSON.parse("{{state.loan.all|escapejs}}");
+  window.approvedLoans = JSON.parse("{{state.loan.approved|escapejs}}");
+  window.allInvestment = JSON.parse("{{state.investment.all|escapejs}}");
+  window.approvedInvestment = JSON.parse("{{state.investment.approved|escapejs}}");
+  window.groupedMonth = JSON.parse("{{grouped_by_month|escapejs}}");
+</script>
+<script src='{% static "js/statistics.js" %}'></script>
+{% endblock javascript %}
