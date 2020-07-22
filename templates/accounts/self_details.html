@@ -5,9 +5,12 @@
 
 {% block content %}
 <div class="container mt-2">
-  <div>
+  <div class="d-flex flex-row justify-content-between align-items-center">
     <div>
       <h2>{{object.first_name}} {{object.last_name}}</h2>
+    </div>
+    <div class="align-middle">
+      <a class="btn btn-primary" href="{% url 'accounts:self_update' %}" role="button">Actualizar</a>
     </div>
   </div>
   <div class="card mb-3">

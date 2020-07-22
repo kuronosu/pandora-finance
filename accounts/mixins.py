@@ -7,7 +7,7 @@ class RedirectAuthenticatedClientMixin:
     def dispatch(self, request, *args, **kwargs):
         if hasattr(self, 'request'):
             if self.request.user.is_authenticated and self.request.user.is_client:
-                return HttpResponseRedirect('/')
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         return super(RedirectAuthenticatedClientMixin, self).dispatch(request, *args, **kwargs)
 
 
@@ -15,14 +15,14 @@ class RedirectAuthenticatedMixin:
     def dispatch(self, request, *args, **kwargs):
         if hasattr(self, 'request'):
             if self.request.user.is_authenticated:
-                return HttpResponseRedirect('/')
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         return super(RedirectAuthenticatedMixin, self).dispatch(request, *args, **kwargs)
 
 
 class EmployeeRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if not self.request.user.is_employee:
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -33,7 +33,7 @@ class LoginEmployeeRequiredMixin(LoginRequiredMixin, EmployeeRequiredMixin):
 class AdminRequiredMixin:
     def dispatch(self, request, *args, **kwargs):
         if not self.request.user.is_superuser:
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -44,9 +44,20 @@ class LoginAdminRequiredMixin(LoginRequiredMixin, AdminRequiredMixin):
 class CanApproveMixin:
     def dispatch(self, request, *args, **kwargs):
         if not self.request.user.can_approve:
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
         return super().dispatch(request, *args, **kwargs)
 
 
 class ChiefCreditLoginRequiredMixin(LoginRequiredMixin, EmployeeRequiredMixin, CanApproveMixin):
     """Verify that the current user is authenticated and can approve financings."""
+
+
+class ClientRequiredMixin:
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.is_client:
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+        return super().dispatch(request, *args, **kwargs)
+
+
+class LoginClientRequiredMixin(LoginRequiredMixin, ClientRequiredMixin):
+    """Verify that the current user is authenticated and is a client."""

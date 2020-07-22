@@ -2,6 +2,8 @@ from django.contrib.auth import authenticate, login, get_user_model
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.views.generic.edit import CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from django.core.exceptions import ImproperlyConfigured
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
@@ -9,6 +11,7 @@ from django.db.models.functions import Concat
 from django.db.models import Value as V
 from django.utils.text import capfirst
 from django.urls import reverse_lazy
+from django.contrib import messages
 from django.contrib.auth.views import (
     PasswordResetView,
     PasswordResetDoneView,
@@ -27,7 +30,8 @@ from .forms import (
 from .mixins import (
     RedirectAuthenticatedClientMixin,
     LoginEmployeeRequiredMixin,
-    LoginAdminRequiredMixin
+    LoginAdminRequiredMixin,
+    LoginClientRequiredMixin,
 )
 
 User = get_user_model()
@@ -173,23 +177,20 @@ class UpdateClientView(LoginEmployeeRequiredMixin, AddToContextMixin, UpdateView
               'address2',
               'birthdate')
 
+    def form_valid(self, form):
+        messages.success(self.request, 'Actualizado exitosamente!')
+        return super().form_valid(form)
+
     def dynamic_context(self):
         return {'user': self.request.user}
 
 
-class SelfDetailsView(LoginRequiredMixin, AddToContextMixin, DetailView):
+class SelfDetailsView(LoginClientRequiredMixin, AddToContextMixin, DetailView):
     """View to vizualizate loged client details."""
 
     model = User
     login_url = reverse_lazy('accounts:login')
     template_name = 'accounts/self_details.html'
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        context = self.get_context_data(object=self.object)
-        if not self.object.is_client:
-            return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
-        return self.render_to_response(context)
 
     def get_object(self, queryset=None):
         return self.request.user
@@ -198,4 +199,67 @@ class SelfDetailsView(LoginRequiredMixin, AddToContextMixin, DetailView):
         return {
             'loans': Loan.objects.filter(client=self.object),
             'investments': Investment.objects.filter(client=self.object)
+        }
+
+
+class SelfUpdateView(LoginClientRequiredMixin, AddToContextMixin, UpdateView):
+    model = User
+    template_name = 'accounts/self_update.html'
+    add_to_context = {
+        'title': 'Actualizar datos',
+        'page_title': 'Actualizar datos',
+        'submit_text': 'Actualizar',
+        'change_password_error': False,
+    }
+    fields = ('phone_number',
+              'email',
+              'address1',
+              'address2')
+
+    def dispatch(self, request, *args, **kwargs):
+        self.password_form = PasswordChangeForm(request.user)
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.will_update_password(request):
+            self.process_password_change(request)
+            return self.render_to_response(self.get_context_data(form=self._get_form()))
+        return super().post(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def _get_form(self, form_class=None):
+        """Return an instance of the form to be used in this view."""
+        if form_class is None:
+            form_class = self.get_form_class()
+        return form_class(instance=self.request.user, **{
+            'initial': self.get_initial(),
+            'prefix': self.get_prefix(),
+        })
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Actualizado exitosamente!')
+        return super().form_valid(form)
+
+    def will_update_password(self, request):
+        return request.POST.get('action') == 'update_pass'
+
+    def process_password_change(self, request):
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(
+                request, 'Su contraseña fue actualizada con éxito!')
+        else:
+            messages.error(
+                request, 'Error al cambiar la contraseña.')
+            self._add_to_context(change_password_error=True)
+        self.password_form = form
+
+    def dynamic_context(self):
+        return {
+            'password_form': self.password_form
         }

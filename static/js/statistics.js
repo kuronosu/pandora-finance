@@ -133,17 +133,35 @@ function loadGroupedMonthData() {
         l.push([d, ...element])
     }
   }
-  if (l.length === 0) {
-  }
   l.sort((a, b) => compare(a[0], b[0]))
-  l.unshift([
+  let l2
+  if (l.length != 0) {
+    l2 = []
+    let prev = null
+    for (let index = 0; index < l.length; index++) {
+      const element = l[index]
+      let wPrev = prev ? new Date(prev.toISOString()) : null
+      while (wPrev && wPrev < element[0]) {
+        if (wPrev.toDateString() != prev.toDateString())
+          l2.push([wPrev, 0, 0, 0, 0])
+        let tmp = new Date(wPrev.toISOString())
+        tmp.setMonth(tmp.getMonth() + 1)
+        wPrev = new Date(tmp.toISOString())
+      }
+      l2.push(element)
+      prev = new Date(element[0].toISOString())
+    }
+  } else {
+    l2 = l
+  }
+  l2.unshift([
     "Mes",
     "Solicitudes de préstamo",
     "Préstamos aprobados",
     "Solicitudes de inversión",
     "Inversiónes aprobadas",
   ])
-  return l
+  return l2
 }
 
 function stringToDate(str) {

@@ -21,3 +21,6 @@ class AddToContextMixin:
 
     def dynamic_context(self):
         return {}
+    
+    def _add_to_context(self, **kwargs):
+        self.add_to_context.update(kwargs)

@@ -17,6 +17,6 @@ def get_client(document=None, **kwargs):
         return None
     try:
         user = UserModel.objects.get(**kwargs)
-        return user
+        return user if user.is_client else None
     except UserModel.DoesNotExist:
         return None
