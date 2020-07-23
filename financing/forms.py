@@ -109,3 +109,10 @@ class ApproveFilterForm(forms.Form):
     financing_state = forms.ChoiceField(
         choices=((0, 'to check'), (1, 'approved'), (2, 'not approved')))
     page = forms.IntegerField(min_value=1)
+
+
+class SearchFinanceForm(forms.Form):
+    code = forms.CharField(label='Codigo:', required=True,
+                           widget=forms.TextInput(attrs={'placeholder': 'Codigo'}))
+    type = forms.ChoiceField(required=True,
+                             choices=(('a', 'Ambas'), ('l', 'Préstamo'), ('i', 'Inversión')))

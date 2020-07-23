@@ -9,14 +9,15 @@ from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
 from django.views.generic.base import TemplateView
 from common.mixins import SetClientMixin, AddToContextMixin
+from django.db.models.query import EmptyQuerySet
 from django.db.models import Sum, Avg, Count, Variance, Max, Min
 from accounts.forms import SearchClientDocumentForm
 from accounts.mixins import (
     LoginEmployeeRequiredMixin, ChiefCreditLoginRequiredMixin)
 
 from .models import (Loan, Investment, Guarantee, GuaranteeType,
-                     LoanPayment, InvestmentPayment)
-from .forms import (LoanCreateForm, InvestmentCreateForm,
+                     LoanPayment, InvestmentPayment, Finance)
+from .forms import (LoanCreateForm, InvestmentCreateForm, SearchFinanceForm,
                     GuaranteeTypeCreateForm, GuaranteeCreateForm)
 
 
@@ -182,12 +183,16 @@ class StatisticsView(ChiefCreditLoginRequiredMixin, AddToContextMixin, TemplateV
                 ['Inversiónes', Investment.objects.count()],
             ]),
             'total_amount': json.dumps([
-                ['Préstamos', float(Loan.objects.all().aggregate(Sum('amount'))['amount__sum'])],
-                ['Inversiónes', float(Investment.objects.all().aggregate(Sum('amount'))['amount__sum'])],
+                ['Préstamos', float(Loan.objects.all().aggregate(
+                    Sum('amount'))['amount__sum'])],
+                ['Inversiónes', float(Investment.objects.all(
+                ).aggregate(Sum('amount'))['amount__sum'])],
             ]),
             'avg_amount': json.dumps([
-                ['Préstamos',   float(Loan.objects.all().aggregate(Avg('amount'))['amount__avg'])],
-                ['Inversiónes', float(Investment.objects.all().aggregate(Avg('amount'))['amount__avg'])],
+                ['Préstamos',   float(Loan.objects.all().aggregate(
+                    Avg('amount'))['amount__avg'])],
+                ['Inversiónes', float(Investment.objects.all(
+                ).aggregate(Avg('amount'))['amount__avg'])],
             ]),
             'state': {
                 'loan': {
@@ -224,3 +229,39 @@ class StatisticsView(ChiefCreditLoginRequiredMixin, AddToContextMixin, TemplateV
                 }
             })
         }
+
+
+class FinanceSearchView(LoginEmployeeRequiredMixin, AddToContextMixin, ListView):
+    template_name = 'financing/search_finance.html'
+    form_class = SearchFinanceForm
+    fields = ['code', 'application_date', 'approval_date', 'start_date', 'end_date',
+              'amount', 'interest_rate', 'checked', 'installments_number',
+              'client__document', 'client__first_name', 'client__last_name']
+
+    def get_queryset(self):
+        """Return the list of items for this view."""
+        self.get_model()
+        filter_kwargs = {
+            'code__icontains': self.request.GET.get('code', '').strip()}
+        if self.model is None and filter_kwargs['code__icontains'] != '':
+            return Loan.objects.filter(**filter_kwargs).values(*self.fields).union(
+                Investment.objects.filter(**filter_kwargs).values(*self.fields))
+        if filter_kwargs['code__icontains'] != '':
+            return self.model.objects.filter(**filter_kwargs).values(*self.fields)
+        return Loan.objects.none()
+
+    def get_model(self):
+        _type = self.request.GET.get('type', '').lower()
+        if _type == 'l':
+            self.model = Loan
+        elif _type == 'i':
+            self.model = Investment
+        else:
+            self.model = None
+
+    def dynamic_context(self):
+        """Return the list of items for this view."""
+        return {'form': self.form_class({
+            'code': self.request.GET.get('code', '').strip().lower(),
+            'type': self.request.GET.get('type', '').strip().lower()
+        })}

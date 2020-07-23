@@ -62,7 +62,7 @@
                 {% if user.can_approve %}
                 <a
                   class="dropdown-item"
-                  href="{% url 'financing:aprove_financing' %}"
+                  href="{% url 'financing:aprove' %}"
                   >Aprobar financiaciones</a
                 >
                 <a class="dropdown-item" href="{% url 'financing:statistics' %}"
@@ -93,6 +93,11 @@
                   class="dropdown-item"
                   href="{% url 'accounts:search_client' %}"
                   >Buscar clientes</a
+                >
+                <a
+                  class="dropdown-item"
+                  href="{% url 'financing:search' %}"
+                  >Buscar financiaciones</a
                 >
               </div>
             </li>
