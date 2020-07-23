@@ -1,0 +1,53 @@
+{% extends 'base.html' %} {% load static %} {% load widget_tweaks %}
+{% load get_verbose_payment_method %}
+{% block content %}
+<div class="container">
+  <div class="card mt-4">
+    <div class="card-body  d-flex justify-content-between">
+      <div>
+        <h5 class="card-title">
+          {{ object.client.first_name }} {{ object.client.last_name }} - {% if object.name %}{{ object.name }}{% endif %}{% if object.checked and object.approval_date %}<span class="text-success"> Aprobado</span>{% elif object.checked == False %}<span class="text-info"> Sin Revisar</span>{% else %}<span class="text-danger"> Rechazado</span>{% endif %}
+        </h5>
+        <h6 class="card-subtitle mb-2 text-muted">({{object.client.document}}) {{object.code}}</h6>
+        <p class="card-text">
+          <span>Cantidad: {{object.amount}}</span><br>
+          <span>Tasa de interés: {% widthratio object.interest_rate 1 100 %}%</span><br>
+          <span>Número de cuotas: {{object.installments_number}}</span><br>
+          <span>Fecha de aplicacion: {{object.application_date}}</span><br>
+          {% if object.checked and object.approval_date %}
+          <span>Fecha de aprobación: {{object.approval_date}}</span><br>
+          <span>Fecha de inicio: {{object.start_date}}</span><br>
+          <span>Fecha de término: {{object.end_date}}</span><br>
+          {% endif %}
+          {% if f_type %}
+          <span>Fiador: {% if loan.guarantor %}{{loan.guarantor}}{% else %}Sin fiador{% endif %}</span><br>
+          <span>Garantía: {% if loan.guarantee %}{{loan.guarantee}}{% else %}Sin garantía{% endif %}</span><br>
+          {% else %}
+          <span>Cuenta bancaria: {{investment.bank_account}}</span><br>
+          {% endif %}
+        </p>
+      </div>
+      {% if user.is_authenticated and user.user_type == 1 %}
+      <a href="{% url 'accounts:client_details' object.client.id %}">Ver cliente</a>
+      {% else %}
+      <a href="{% url 'accounts:self_details' %}">Ver perfil</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="horizontal-scrollable row mx-0 mt-1">
+      {% for payment in payments %}
+      <div class="payment px-0 mx-0 card text-white {% if payment.effective_date %}bg-success{%elif payment.overdue%}bg-danger{% else %}bg-info{% endif %} mb-3">
+        <div class="card-header">{{payment.planned_date}}</div>
+        <div class="card-body">
+          <p class="card-text">
+            <span class="text-wrap">Cantidad: {{payment.amount}}</span><br>
+            <span class="text-wrap">Método: {% if payment.method != None %}{{payment.method|get_verbose_payment_method}}{% else %}No pagado{% endif %}</span><br>
+            <span class="text-wrap">Vale: {% if payment.voucher != None %}{{payment.voucher}}{% else %}No pagado{% endif %}</span><br>
+            <span class="text-wrap">Fecha efectiva: {% if payment.effective_date %}{{payment.effective_date}}{% else %}No pagado{% endif %}</span><br>
+          </p>
+        </div>
+      </div>
+      {% endfor %}
+  </div>
+</div>
+{% endblock content %}

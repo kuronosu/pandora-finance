@@ -11,5 +11,7 @@ urlpatterns = [
     path('create/guarantee/type/', views.CreateGuaranteeTypeView.as_view(), name='create_guarantee_type'),
     path('approve/', views.FinancingApproveListView.as_view(), name='aprove'),
     path('statistics/', views.StatisticsView.as_view(), name='statistics'),
-    path('search/', views.FinanceSearchView.as_view(), name='search'),
+    path('search/', views.FinancingSearchView.as_view(), name='search'),
+    path('l/<str:pk>/', views.LoanDetailView.as_view(), name='loan_details'),
+    path('i/<str:pk>/', views.InvestmentDetailView.as_view(), name='investment_details'),
 ]

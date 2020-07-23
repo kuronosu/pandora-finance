@@ -20,22 +20,22 @@
   </div>
   <div class="list-group list-group-flush">
     {% for finance in object_list %}
-    <a href="" class="list-group-item list-group-item-action">
-      <span>{{ finance.code }}
+    <a href="{% if finance.f_type %}{% url 'financing:loan_details' finance.code %}{% else %}{% url 'financing:investment_details' finance.code %}{% endif %}" class="list-group-item list-group-item-action">
+      <span>{{ finance.client__document }} {{ finance.client__first_name }} {{ finance.client__last_name }}{% if finance.name %} - {{ finance.name }}{% endif %}</span><br>
+      <span>{% if finance.f_type %}Préstamo: {% else %}Inversión: {% endif %} {{ finance.code }}
         {% if finance.checked and finance.approval_date %}
-        <span class="text-success">Aprovado</span>
+        <span class="text-success">Aprobado</span>
         {% elif finance.checked == False %}
         <span class="text-info">Sin Revisar</span>
         {% else %}
-        <span class="text-danger">No aprovado</span>
+        <span class="text-danger">Rechazado</span>
         {% endif %}
       </span><br>
       <span>Fecha de aplicacion: {{ finance.application_date }}
         {% if finance.checked and finance.approval_date %}
         Fecha de aprobación: {{finance.approval_date}}
         {% endif %}
-      </span><br>
-      <span>{{ finance.client__document }} - {{ finance.client__first_name }} {{ finance.client__last_name }}</span>
+      </span>
     </a>
     {% empty %}
     <span class="list-group-item">No se encontraron financiaciones.</span>

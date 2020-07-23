@@ -7,12 +7,14 @@ from .models import Investment, Loan, Guarantee, GuaranteeType, LoanPayment, Inv
 @admin.register(Investment, Loan)
 class FinanceAdmin(admin.ModelAdmin):
     ordering = ('application_date', 'code',)
-    list_display = ('code', 'client', 'approval_date', 'application_date')
+    list_display = ('code', 'name', 'client',
+                    'approval_date', 'application_date')
 
 
 @admin.register(Guarantee, GuaranteeType)
 class GuaranteeAdmin(admin.ModelAdmin):
     pass
+
 
 @admin.register(LoanPayment, InvestmentPayment)
 class PaymentAdmin(admin.ModelAdmin):

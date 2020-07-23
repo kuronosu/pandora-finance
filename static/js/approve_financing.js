@@ -39,7 +39,7 @@ function createModalCard(data) {
   $container.appendChild(createT('Numero de cuotas', data.fields.installments_number))
   $container.appendChild(createT('Tasa de interes', data.fields.interest_rate * 100, '%'))
   $container.appendChild(createT('Fecha de inicio', data.fields.start_date))
-  $container.appendChild(createT('Fecha final', data.fields.end_date))
+  $container.appendChild(createT('Fecha de término', data.fields.end_date))
   if (data.model == 'financing.investment') {
     $container.appendChild(createT('Cuenta bancaria', data.fields.bank_account))
   } else if (data.model == 'financing.loan') {
