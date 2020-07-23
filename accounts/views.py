@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, get_user_model
 from django.http import HttpResponseRedirect, JsonResponse, Http404
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -264,3 +264,28 @@ class SelfUpdateView(LoginClientRequiredMixin, AddToContextMixin, UpdateView):
         return {
             'password_form': self.password_form
         }
+
+
+class UnsubscribeClientView(LoginEmployeeRequiredMixin, DynamicContext, DeleteView):
+    model = User
+    template_name = 'accounts/unsubscribe_client.html'
+    queryset = User.objects.filter(user_type=User.types[1], is_active=True)
+
+    def dynamic_context(self):
+        return {'user': self.request.user}
+
+    def can_unsubscribe(self):
+        return not (any([l.is_active() for l in self.object.loan_client.all()]) or
+                    any([l.is_active() for l in self.object.investment_client.all()]))
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.can_unsubscribe():
+            self.object.is_active = False
+            self.object.save()
+            messages.success(
+                self.request, 'Cliente dado de baja exitosamente.')
+            return HttpResponseRedirect('/')
+        messages.error(
+            self.request, 'No puede darse de baja de cliente, ¡todavía tiene financiaciones activas!')
+        return self.render_to_response(self.get_context_data(object=self.object))

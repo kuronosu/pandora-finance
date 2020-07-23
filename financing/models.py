@@ -96,11 +96,16 @@ class Finance(models.Model):
         return [{'month': d['month'].strftime('%Y-%m'), 'count': d['c']} for d in
                 cls.objects.exclude(**{attr: None}).annotate(month=TruncMonth(attr)).values('month').annotate(c=Count('code')).values('month', 'c')]
 
+    def is_active(self):
+        if hasattr(self, 'payment_related_name'):
+            return getattr(self, self.payment_related_name).filter(effective_date=None).count() != 0
+
     class Meta:
         abstract = True
 
 
 class Loan(Finance):
+    payment_related_name = 'loan_payment'
     code = models.UUIDField('Código', primary_key=True,
                             default=generate_code_loan, editable=False)
     client = models.ForeignKey(
@@ -120,6 +125,7 @@ class Loan(Finance):
 
 
 class Investment(Finance):
+    payment_related_name = 'investment_payment'
     code = models.UUIDField('Código', primary_key=True,
                             default=generate_code_investment, editable=False)
     client = models.ForeignKey(

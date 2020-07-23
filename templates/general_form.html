@@ -16,13 +16,6 @@
   </button>
 </div>
 {% endif %}
-{% if messages %}
-  {% for msg in messages %}
-  <div class="alert alert-{% if msg.tags %}{% if msg.tags == "error" %}danger{% else %}{{ msg.tags }}{% endif %}{% else %}secondary{% endif %} show rounded-0" role="alert">
-    <p class="mb-0">{{ msg }}</p>
-  </div>
-  {% endfor %}
-{% endif %}
 
 <div class="container">
   <h2 class="text-left mb-4 mt-3">{{ title }}</h2>
