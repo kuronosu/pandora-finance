@@ -163,6 +163,7 @@ class UpdateClientView(LoginEmployeeRequiredMixin, AddToContextMixin, UpdateView
 
     model = User
     template_name = 'general_form.html'
+    queryset = User.objects.filter(user_type=User.types[1], is_active=True)
     add_to_context = {
         'title': 'Actualizar cliente',
         'page_title': 'Actualizar cliente',

@@ -29,3 +29,18 @@ body {
   bottom: 300px;
   color: red;
 }
+
+.horizontal-scrollable {
+  overflow-x: auto;
+  white-space: nowrap;
+  display: block !important;
+}
+
+.horizontal-scrollable > .payment {
+  display: inline-block;
+  float: none;
+}
+
+.payment {
+  width: 367px;
+}

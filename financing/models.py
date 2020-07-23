@@ -48,6 +48,7 @@ class Guarantee(models.Model):
 
 
 class Finance(models.Model):
+    name = models.CharField('Nombre', max_length=15, blank=True, null=True)
     application_date = models.DateTimeField(
         'Fecha de solicitud', default=timezone.now)
     approval_date = models.DateTimeField(

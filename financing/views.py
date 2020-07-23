@@ -1,23 +1,26 @@
 import json
 from datetime import datetime
+from django.utils import timezone
 from django.conf import settings
 from django.utils import timezone
 from django.urls import reverse_lazy
 from django.http.response import JsonResponse
 from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic.edit import CreateView
 from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 from django.views.generic.base import TemplateView
-from common.mixins import SetClientMixin, AddToContextMixin
 from django.db.models.query import EmptyQuerySet
-from django.db.models import Sum, Avg, Count, Variance, Max, Min
+from django.db.models import (Sum, Avg, Count, Variance, Max, Q,
+                              Min, Value, BooleanField, Case, When)
+from common.mixins import SetClientMixin, AddToContextMixin
 from accounts.forms import SearchClientDocumentForm
-from accounts.mixins import (
-    LoginEmployeeRequiredMixin, ChiefCreditLoginRequiredMixin)
-
+from accounts.mixins import (LoginEmployeeRequiredMixin, AccessMixin,
+                             ChiefCreditLoginRequiredMixin,)
 from .models import (Loan, Investment, Guarantee, GuaranteeType,
-                     LoanPayment, InvestmentPayment, Finance)
-from .forms import (LoanCreateForm, InvestmentCreateForm, SearchFinanceForm,
+                     LoanPayment, InvestmentPayment)
+from .forms import (LoanCreateForm, InvestmentCreateForm, SearchFinancingForm,
                     GuaranteeTypeCreateForm, GuaranteeCreateForm)
 
 
@@ -202,7 +205,7 @@ class StatisticsView(ChiefCreditLoginRequiredMixin, AddToContextMixin, TemplateV
                     ]),
                     'all': json.dumps([
                         ['Aprobados', tl],
-                        ['No aprobados', Loan.get_not_approved().count()],
+                        ['Rechazados', Loan.get_not_approved().count()],
                         ['Sin revisar', Loan.get_to_check().count()],
                     ])
                 },
@@ -213,7 +216,7 @@ class StatisticsView(ChiefCreditLoginRequiredMixin, AddToContextMixin, TemplateV
                     ]),
                     'all': json.dumps([
                         ['Aprobados', ti],
-                        ['No aprobados', Investment.get_not_approved().count()],
+                        ['Rechazados', Investment.get_not_approved().count()],
                         ['Sin revisar', Investment.get_to_check().count()],
                     ])
                 },
@@ -231,12 +234,12 @@ class StatisticsView(ChiefCreditLoginRequiredMixin, AddToContextMixin, TemplateV
         }
 
 
-class FinanceSearchView(LoginEmployeeRequiredMixin, AddToContextMixin, ListView):
+class FinancingSearchView(LoginEmployeeRequiredMixin, AddToContextMixin, ListView):
     template_name = 'financing/search_finance.html'
-    form_class = SearchFinanceForm
-    fields = ['code', 'application_date', 'approval_date', 'start_date', 'end_date',
-              'amount', 'interest_rate', 'checked', 'installments_number',
-              'client__document', 'client__first_name', 'client__last_name']
+    form_class = SearchFinancingForm
+    fields = ['code', 'application_date', 'approval_date', 'start_date', 'end_date', 'name',
+              'amount', 'interest_rate', 'checked', 'installments_number', 'client__id',
+              'client__document', 'client__first_name', 'client__last_name', 'f_type']
 
     def get_queryset(self):
         """Return the list of items for this view."""
@@ -244,10 +247,17 @@ class FinanceSearchView(LoginEmployeeRequiredMixin, AddToContextMixin, ListView)
         filter_kwargs = {
             'code__icontains': self.request.GET.get('code', '').strip()}
         if self.model is None and filter_kwargs['code__icontains'] != '':
-            return Loan.objects.filter(**filter_kwargs).values(*self.fields).union(
-                Investment.objects.filter(**filter_kwargs).values(*self.fields))
+            l = Loan.objects.filter(**filter_kwargs).annotate(f_type=Case(
+                default=Value(True), output_field=BooleanField())).values(*self.fields)
+            i = Investment.objects.filter(**filter_kwargs).annotate(f_type=Case(
+                default=Value(False), output_field=BooleanField())).values(*self.fields)
+            return l.union(i)
         if filter_kwargs['code__icontains'] != '':
-            return self.model.objects.filter(**filter_kwargs).values(*self.fields)
+            return self.model.objects.filter(**filter_kwargs)\
+                .annotate(f_type=Case(
+                    default=Value(True if type(self.model) is Loan else False),
+                    output_field=BooleanField()))\
+                .values(*self.fields)
         return Loan.objects.none()
 
     def get_model(self):
@@ -265,3 +275,38 @@ class FinanceSearchView(LoginEmployeeRequiredMixin, AddToContextMixin, ListView)
             'code': self.request.GET.get('code', '').strip().lower(),
             'type': self.request.GET.get('type', '').strip().lower()
         })}
+
+
+class FinancingDetailDetailView(LoginRequiredMixin, AccessMixin, DetailView):
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if not (self.request.user.is_employee or self.object.client == self.request.user):
+            return self.cant_access(self.request)
+        today = timezone.now()
+        context = self.get_context_data(
+            object=self.object,
+            payments=(self.payment_class.objects
+                      .filter(finance=self.object)
+                      .annotate(overdue=Case(
+                          When(Q(effective_date=None) & Q(
+                              planned_date__lt=today), then=Value(True)),
+                          default=Value(False),
+                          output_field=BooleanField())
+                      )
+                      .order_by('planned_date')))
+        return self.render_to_response(context)
+
+
+class LoanDetailView(FinancingDetailDetailView, AddToContextMixin, DetailView):
+    model = Loan
+    template_name = 'financing/details.html'
+    payment_class = LoanPayment
+    add_to_context = {'f_type': True}
+
+
+class InvestmentDetailView(FinancingDetailDetailView, AddToContextMixin, DetailView):
+    model = Investment
+    template_name = 'financing/details.html'
+    payment_class = InvestmentPayment
+    add_to_context = {'f_type': False}

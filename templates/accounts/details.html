@@ -32,27 +32,32 @@
         <a class="nav-item nav-link" id="nav-investment-tab" data-toggle="tab" href="#nav-investment" >Inversiones</a>
       </div>
     </nav>
-    <div class="tab-content" id="nav-tabContent">
+    <div class="tab-content mb-3" id="nav-tabContent">
       <div class="tab-pane fade show active" id="nav-loan" role="tabpanel" aria-labelledby="nav-loan-tab">
         <ul class="list-group list-group-flush">
           {% for loan in loans %}
-          <li class="list-group-item">
-            <span>Cantidad: {{loan.amount}}</span><br />
-            <span>Tasa de interés: {% widthratio loan.interest_rate 1 100 %}%</span><br />
-            <span>Número de cuotas: {{loan.installments_number}}</span><br />
-            <span>Fecha de aplicacion: {{loan.application_date}}</span><br />
-            <span>Fiador: {% if loan.guarantor %}{{loan.guarantor}}{% else %}Sin fiador{% endif %}</span><br />
-            <span>Garantía: {% if loan.guarantee %}{{loan.guarantee}}{% else %}Sin garantía{% endif %}</span><br />
-            {% if loan.checked and loan.approval_date %}
-            <span class="text-success">Estado: Aprovado</span>
-            <span>Fecha de aprobación: {{loan.approval_date}}</span><br />
-            <span>Fecha de inicio: {{loan.start_date}}</span><br />
-            <span>Fecha final: {{loan.end_date}}</span><br />
-            {% elif loan.checked == False %}
-            <span class="text-info">Estado: Sin Revisar</span>
-            {% else %}
-            <span class="text-danger">Estado: No aprovado</span>
-            {% endif %}
+          <li class="list-group-item d-flex justify-content-between">
+            <div>
+              {%if loan.name%}<span>Nombre: {{loan.name}}</span><br>{%endif%}
+              <span>Codigo: {{loan.code}}</span><br>
+              <span>Cantidad: {{loan.amount}}</span><br>
+              <span>Tasa de interés: {% widthratio loan.interest_rate 1 100 %}%</span><br>
+              <span>Número de cuotas: {{loan.installments_number}}</span><br>
+              <span>Fecha de aplicacion: {{loan.application_date}}</span><br>
+              <span>Fiador: {% if loan.guarantor %}{{loan.guarantor}}{% else %}Sin fiador{% endif %}</span><br>
+              <span>Garantía: {% if loan.guarantee %}{{loan.guarantee}}{% else %}Sin garantía{% endif %}</span><br>
+              {% if loan.checked and loan.approval_date %}
+              <span class="text-success">Estado: Aprobado</span><br>
+              <span>Fecha de aprobación: {{loan.approval_date}}</span><br>
+              <span>Fecha de inicio: {{loan.start_date}}</span><br>
+              <span>Fecha de término: {{loan.end_date}}</span><br>
+              {% elif loan.checked == False %}
+              <span class="text-info">Estado: Sin Revisar</span>
+              {% else %}
+              <span class="text-danger">Estado: Rechazado</span>
+              {% endif %}
+            </div>
+            <a class="card-link" href="{% url 'financing:loan_details' loan.code %}">Ver detalles</a>
           </li>
           {% endfor %}
         </ul>
@@ -60,22 +65,27 @@
       <div class="tab-pane fade" id="nav-investment" role="tabpanel" aria-labelledby="-investnavment-tab">
         <ul class="list-group list-group-flush">
           {% for investment in investments %}
-          <li class="list-group-item">
-            <span>Cantidad: {{investment.amount}}</span><br />
-            <span>Tasa de interés: {% widthratio investment.interest_rate 1 100%}%</span><br />
-            <span>Número de cuotas: {{investment.installments_number}}</span><br />
-            <span>Fecha de aplicacion: {{investment.application_date}}</span><br />
-            <span>Cuenta bancaria: {{investment.bank_account}}</span><br />
-            {% if investment.checked and investment.approval_date  %}
-            <span class="text-success">Estado: Aprovado</span><br />
-            <span>Fecha de aprobación: {{investment.approval_date}}</span><br />
-            <span>Fecha de inicio: {{investment.start_date}}</span><br />
-            <span>Fecha final: {{investment.end_date}}</span><br />
-            {% elif investment.checked == False %}
-            <span class="text-info">Estado: Sin Revisar</span>
-            {% else %}
-            <span class="text-danger">Estado: No aprovado</span>
-            {% endif %}
+          <li class="list-group-item d-flex justify-content-between">
+            <div>
+              {%if investment.name%}<span>Nombre: {{investment.name}}</span><br>{%endif%}
+              <span>Codigo: {{investment.code}}</span><br>
+              <span>Cantidad: {{investment.amount}}</span><br>
+              <span>Tasa de interés: {% widthratio investment.interest_rate 1 100%}%</span><br>
+              <span>Número de cuotas: {{investment.installments_number}}</span><br>
+              <span>Fecha de aplicacion: {{investment.application_date}}</span><br>
+              <span>Cuenta bancaria: {{investment.bank_account}}</span><br>
+              {% if investment.checked and investment.approval_date  %}
+              <span class="text-success">Estado: Aprobado</span><br>
+              <span>Fecha de aprobación: {{investment.approval_date}}</span><br>
+              <span>Fecha de inicio: {{investment.start_date}}</span><br>
+              <span>Fecha de término: {{investment.end_date}}</span><br>
+              {% elif investment.checked == False %}
+              <span class="text-info">Estado: Sin Revisar</span>
+              {% else %}
+              <span class="text-danger">Estado: Rechazado</span>
+              {% endif %}
+            </div>
+            <a class="card-link" href="{% url 'financing:investment_details' investment.code %}">Ver detalles</a>
           </li>
           {% endfor %}
         </ul>

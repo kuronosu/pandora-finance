@@ -111,7 +111,7 @@ class ApproveFilterForm(forms.Form):
     page = forms.IntegerField(min_value=1)
 
 
-class SearchFinanceForm(forms.Form):
+class SearchFinancingForm(forms.Form):
     code = forms.CharField(label='Codigo:', required=True,
                            widget=forms.TextInput(attrs={'placeholder': 'Codigo'}))
     type = forms.ChoiceField(required=True,
