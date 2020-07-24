@@ -189,15 +189,15 @@ class StatisticsView(ChiefCreditLoginRequiredMixin, AddToContextMixin, TemplateV
             ]),
             'total_amount': json.dumps([
                 ['Préstamos', float(Loan.objects.all().aggregate(
-                    Sum('amount'))['amount__sum'])],
-                ['Inversiónes', float(Investment.objects.all(
-                ).aggregate(Sum('amount'))['amount__sum'])],
+                    Sum('amount'))['amount__sum'] or 0)],
+                ['Inversiónes', float(Investment.objects.all().aggregate(
+                    Sum('amount'))['amount__sum'] or 0)],
             ]),
             'avg_amount': json.dumps([
                 ['Préstamos',   float(Loan.objects.all().aggregate(
-                    Avg('amount'))['amount__avg'])],
-                ['Inversiónes', float(Investment.objects.all(
-                ).aggregate(Avg('amount'))['amount__avg'])],
+                    Avg('amount'))['amount__avg'] or 0)],
+                ['Inversiónes', float(Investment.objects.all().aggregate(
+                    Avg('amount'))['amount__avg'] or 0)],
             ]),
             'state': {
                 'loan': {
