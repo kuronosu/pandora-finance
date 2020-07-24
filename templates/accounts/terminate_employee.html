@@ -1,0 +1,36 @@
+{% extends "base.html" %} {% load static %} {% load widget_tweaks %}
+{% block title %}{{ page_title }}{% endblock title %}
+{% block content %}
+<div class="container mt-2">
+  <div class="card w-100">
+    <div class="card-body">
+      {% if object %}
+      <h4 class="card-title">Dar de baja a {{ object.first_name }} {{ object.last_name }}?</h4>
+      <h5 class="card-subtitle mb-2 text-muted">{{object.document}}</h5>
+      <form method="post">
+        {% csrf_token %}
+        <p class="card-text">Seguro desea dar de baja al empleado?</p>
+        <a href="" class="btn btn-secondary card-link">Cancelar</a>
+        <input type="hidden" name="document" value="{{ object.document }}">
+        <input type="hidden" name="delete" value="y">
+        <input
+          class="btn btn-danger card-link"
+          type="submit"
+          value="Confirmar"
+        />
+      </form>
+      {% else %}
+      <h4 class="card-title">Dar de baja empleado</h4>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group row">
+          <label class="col-sm-3 col-form-label" for="SearchEmployeeInput">Cédula del empleado: </label>
+          <input name="document" type="text" class="form-control col-sm-8" id="SearchEmployeeInput" placeholder="Cédula">
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

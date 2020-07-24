@@ -266,8 +266,9 @@ class SelfUpdateView(LoginClientRequiredMixin, AddToContextMixin, UpdateView):
         }
 
 
-class UnsubscribeClientView(LoginEmployeeRequiredMixin, DynamicContext, DeleteView):
+class UnsubscribeClientView(LoginEmployeeRequiredMixin, AddToContextMixin, DeleteView):
     model = User
+    success_url = '/'
     template_name = 'accounts/unsubscribe_client.html'
     queryset = User.objects.filter(user_type=User.types[1], is_active=True)
 
@@ -285,7 +286,51 @@ class UnsubscribeClientView(LoginEmployeeRequiredMixin, DynamicContext, DeleteVi
             self.object.save()
             messages.success(
                 self.request, 'Cliente dado de baja exitosamente.')
-            return HttpResponseRedirect('/')
+            success_url = self.get_success_url()
+            return HttpResponseRedirect(success_url)
         messages.error(
-            self.request, 'No puede darse de baja de cliente, ¡todavía tiene financiaciones activas!')
+            self.request, 'No puede darse de baja al cliente, ¡todavía tiene financiaciones activas!')
         return self.render_to_response(self.get_context_data(object=self.object))
+
+
+class TerminateEmployeeView(LoginAdminRequiredMixin, DeleteView):
+    model = User
+    template_name = 'accounts/terminate_employee.html'
+    queryset = User.objects.filter(user_type=User.types[0], is_active=True)
+
+    def _get(self, request, *args, **kwargs):
+        if not hasattr(self, 'object'):
+            self.object = self.get_object()
+        context = self.get_context_data(object=self.object)
+        return self.render_to_response(context)
+
+    def get(self, request, *args, **kwargs):
+        return self._get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.POST.get('delete', 'n').lower() == 'y':
+            return self.delete(request, *args, **kwargs)
+        if not self.object:
+            messages.error(self.request, 'Empleado no encontrado.')
+        return self._get(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        if not hasattr(self, 'object'):
+            self.object = self.get_object()
+        if not self.object:
+            messages.error(self.request, 'Empleado no encontrado.')
+            return self._get(request, *args, **kwargs)
+        self.object.is_active = False
+        self.object.save()
+        self.object = None
+        messages.success(self.request, 'Empleado dado de baja exitosamente.')
+        return self._get(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        if queryset is None:
+            queryset = self.get_queryset()
+        try:
+            return queryset.get(document=self.request.POST.get('document'))
+        except queryset.model.DoesNotExist:
+            return None

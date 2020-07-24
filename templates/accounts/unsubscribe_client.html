@@ -2,16 +2,14 @@
 {% block title %}{{ page_title }}{% endblock title %}
 {% block content %}
 <div class="container mt-2">
-  <div class="card w-100" style="width: 18rem;">
+  <div class="card w-100">
     <div class="card-body">
-      <h4 class="card-title">{{object.document}}</h5>
-      <h5 class="card-subtitle mb-2 text-muted">
-        {{ object.first_name }} {{ object.last_name }}
-      </h6>
+      <h4 class="card-title">Dar de baja a {{ object.first_name }} {{ object.last_name }}?</h4>
+      <h5 class="card-subtitle mb-2 text-muted">{{object.document}}</h5>
       <form method="post">
         {% csrf_token %}
         <p class="card-text">Seguro desea dar de baja al cliente?</p>
-        <a href="{% url 'accounts:client_details' object.id %}" class="btn btn-info card-link">Cancelar</a>
+        <a href="{% url 'accounts:client_details' object.id %}" class="btn btn-secondary card-link">Cancelar</a>
         <input
           class="btn btn-danger card-link"
           type="submit"
