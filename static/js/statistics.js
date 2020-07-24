@@ -174,7 +174,7 @@ function stringToDate(str) {
 }
 
 function findGetParameter(parameterName) {
-  var result = null,
+  let result = null,
     tmp = []
   location.search
     .substr(1)

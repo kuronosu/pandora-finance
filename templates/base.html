@@ -57,13 +57,8 @@
                   href="{% url 'accounts:terminate_employee' %}"
                   >Dar de baja empleado</a
                 >
-                {% endif %}
-                <a
-                  class="dropdown-item"
-                  href="{% url 'accounts:signup_client' %}"
-                  >Registrar cliente</a
-                >
                 <div class="dropdown-divider"></div>
+                {% endif %}
                 {% if user.can_approve %}
                 <a
                   class="dropdown-item"
@@ -73,7 +68,13 @@
                 <a class="dropdown-item" href="{% url 'financing:statistics' %}"
                   >Estadísticas</a
                 >
+                <div class="dropdown-divider"></div>
                 {% endif %}
+                <a
+                  class="dropdown-item"
+                  href="{% url 'accounts:signup_client' %}"
+                  >Registrar cliente</a
+                >
                 <a
                   class="dropdown-item"
                   href="{% url 'financing:create_loan' %}"
