@@ -4,10 +4,12 @@ from django.utils import timezone
 from django.conf import settings
 from django.utils import timezone
 from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
 from django.http.response import JsonResponse
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.base import TemplateView
@@ -310,3 +312,38 @@ class InvestmentDetailView(FinancingDetailDetailView, AddToContextMixin, DetailV
     template_name = 'financing/details.html'
     payment_class = InvestmentPayment
     add_to_context = {'f_type': False}
+
+
+class UpdatePaymentView(LoginEmployeeRequiredMixin, AddToContextMixin, UpdateView):
+    fields = ('method', 'voucher')
+    template_name = 'financing/update_payment.html'
+    add_to_context = {
+        'submit_text': 'Pagar',
+        'title': 'Realizar pago',
+        'page_title': 'Realizar pago'
+    }
+
+    def form_valid(self, form):
+        self.object = form.save()
+        self.object.effective_date = timezone.now()
+        self.object.save()
+        messages.success(self.request, 'Pago realizado exitosamente!')
+        return HttpResponseRedirect(reverse_lazy(self.success_url_view, kwargs={'pk': self.object.finance.code}))
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['method'].required = True
+        form.fields['voucher'].required = True
+        return form
+
+
+class UpdateLoanPayment(UpdatePaymentView):
+    model = LoanPayment
+    queryset = model.objects.filter(effective_date=None)
+    success_url_view = 'financing:loan_details'
+
+
+class UpdateInvestmentPayment(UpdatePaymentView):
+    model = InvestmentPayment
+    queryset = model.objects.filter(effective_date=None)
+    success_url_view = 'financing:investment_details'

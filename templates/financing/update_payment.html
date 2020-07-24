@@ -1,0 +1,8 @@
+{% extends "general_form.html" %} {% block top_content %}
+<p>
+  <span>Cliente: {{ object.finance.client.first_name }} {{ object.finance.client.last_name }} - {{ object.finance.client.document }}</span><br>
+  <span>Financiacion: {%if object.finance.name%}{{object.finance.name}}{%else%}{{object.finance.code}}{%endif%}</span><br>
+  <span>Suma a pagar: {{object.amount}}</span><br>
+  <span>Fecha esperada de pago: {{object.planned_date}}</span>
+</p>
+{% endblock top_content %}

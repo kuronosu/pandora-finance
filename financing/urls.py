@@ -14,4 +14,6 @@ urlpatterns = [
     path('search/', views.FinancingSearchView.as_view(), name='search'),
     path('l/<str:pk>/', views.LoanDetailView.as_view(), name='loan_details'),
     path('i/<str:pk>/', views.InvestmentDetailView.as_view(), name='investment_details'),
+    path('payment/l/<str:pk>/', views.UpdateLoanPayment.as_view(), name='make_loan_payment'),
+    path('payment/i/<str:pk>/', views.UpdateInvestmentPayment.as_view(), name='make_investment_payment'),
 ]

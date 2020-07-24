@@ -37,7 +37,12 @@
   <div class="horizontal-scrollable row mx-0 mt-1">
       {% for payment in payments %}
       <div class="payment px-0 mx-0 card text-white {% if payment.effective_date %}bg-success{%elif payment.overdue%}bg-danger{% else %}bg-info{% endif %} mb-3">
-        <div class="card-header">{{payment.planned_date}}</div>
+        <div class="card-header d-flex flex-row justify-content-between">
+          <span>{{payment.planned_date}}</span>
+          {% if not payment.effective_date %}
+          <a class="stretched-link card-link text-light" href="{% if f_type %}{% url 'financing:make_loan_payment' payment.id %}{% else %}{% url 'financing:make_investment_payment' payment.id %}{% endif %}">Realizar pago</a>
+          {% endif %}
+        </div>
         <div class="card-body">
           <p class="card-text">
             <span class="text-wrap">Cantidad: {{payment.amount}}</span><br>

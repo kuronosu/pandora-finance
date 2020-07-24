@@ -19,6 +19,7 @@
 
 <div class="container">
   <h2 class="text-left mb-4 mt-3">{{ title }}</h2>
+  {% block top_content %}{% endblock top_content %}
   <form method="post">
     {% csrf_token %}
 
