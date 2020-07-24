@@ -21,7 +21,7 @@ from django.views.generic import TemplateView
 from .ajax_urls import urlpatterns as ajax_urls
 
 urlpatterns = [
-    path('', TemplateView.as_view(template_name="base.html"), name='home'),
+    path('', TemplateView.as_view(template_name="home.html"), name='home'),
     path('', include('accounts.urls', namespace='accounts')),
     path('financing/', include('financing.urls', namespace='financing')),
     path('ajax/', include(ajax_urls)),
