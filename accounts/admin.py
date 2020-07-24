@@ -34,7 +34,7 @@ class MyUserAdmin(UserAdmin):
         }),
     )
     ordering = ('document',)
-    list_display = ('document', 'id')
+    list_display = ('document', 'id', 'email')
 
 
 admin.site.register(User, MyUserAdmin)

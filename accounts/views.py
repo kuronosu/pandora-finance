@@ -13,9 +13,10 @@ from django.utils.text import capfirst
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.views import (
-    PasswordResetView,
-    PasswordResetDoneView,
-    PasswordResetConfirmView,
+    PasswordResetView as _PasswordResetView,
+    PasswordResetDoneView as _PasswordResetDoneView,
+    PasswordResetConfirmView as _PasswordResetConfirmView,
+    PasswordResetCompleteView as _PasswordResetCompleteView,
     LoginView as _LoginView,
     LogoutView
 )
@@ -32,6 +33,7 @@ from .mixins import (
     LoginEmployeeRequiredMixin,
     LoginAdminRequiredMixin,
     LoginClientRequiredMixin,
+    RedirectAuthenticatedMixin
 )
 
 User = get_user_model()
@@ -98,20 +100,29 @@ class SignupEmployeeView(LoginAdminRequiredMixin, AddToContextMixin, SignupView)
     }
 
 
-class MyPasswordResetView(RedirectAuthenticatedClientMixin, PasswordResetView):
+class PasswordResetView(RedirectAuthenticatedMixin, AddToContextMixin, _PasswordResetView):
     email_template_name = 'accounts/password_reset_email.html'
-    template_name = 'accounts/password_reset_form.html'
+    template_name = 'general_form.html'
     success_url = reverse_lazy('accounts:password_reset_done')
+    add_to_context = {
+        'title': 'Recuperar contraseña',
+        'page_title': 'Recuperar contraseña',
+        'submit_text': 'Enviar',
+    }
 
 
-class MyPasswordResetDoneView(RedirectAuthenticatedClientMixin, PasswordResetDoneView):
+class PasswordResetDoneView(RedirectAuthenticatedMixin, _PasswordResetDoneView):
     template_name = 'accounts/password_reset_done.html'
 
 
-class MyPasswordResetConfirmView(RedirectAuthenticatedClientMixin, PasswordResetConfirmView):
+class PasswordResetConfirmView(RedirectAuthenticatedMixin, _PasswordResetConfirmView):
     template_name = 'accounts/password_reset_confirm.html'
-    success_url = reverse_lazy('accounts:login')
-    post_reset_login = True
+    success_url = reverse_lazy('accounts:password_reset_complete')
+    # post_reset_login = True
+
+
+class PasswordResetCompleteView(RedirectAuthenticatedMixin, _PasswordResetCompleteView):
+    template_name = 'accounts/password_reset_complete.html'
 
 
 class ClientSearchView(LoginEmployeeRequiredMixin, AddToContextMixin, ListView):

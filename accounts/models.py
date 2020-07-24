@@ -35,7 +35,7 @@ class User(AbstractBaseUser, PermissionsMixin):
                                  NameValidator()], max_length=150)
     phone_number = models.CharField(
         validators=[PhoneValidator()], max_length=17)
-    email = models.EmailField('Correo electronico')
+    email = models.EmailField('Correo electronico', unique=True)
     address1 = models.CharField('Dirección 1', max_length=1024)
     address2 = models.CharField(
         'Dirección 2', max_length=1024, blank=True, null=True)
